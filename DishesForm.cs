@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Data;
+using System.Data.Objects.SqlClient;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -12,9 +15,283 @@ namespace Lab1_RKP
 {
     public partial class DishesForm : Form
     {
+
+        FormsSettings formsSettings;
+        static string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+
+        SqlConnection sqlConnection = new SqlConnection(connectionString);
+
+        private DataSet ds;
+        private SqlDataAdapter adapter;
+
+        private SqlCommandBuilder commandBuilder;
+
+        private DataTable dishesTable;
+        private DataTable dishTypeTable;
+        private DataTable dataGridViewTable;
+
+        private string selectedDishType;
         public DishesForm()
         {
             InitializeComponent();
+            formsSettings = new FormsSettings("Блюда");
+            Text = formsSettings.Text;
+            this.BackColor = formsSettings.BackColor;
+            this.Location = formsSettings.Location;
+            this.Load += dishesForm_Load;
+        }
+
+        private void dishesForm_Load(object sender,EventArgs e)
+        {
+            try
+            {
+                // Открываем подключение
+                sqlConnection.Open();
+                adapter = new SqlDataAdapter("Select * from dishes;Select * from dishTypes", sqlConnection);
+                ds = new DataSet();
+                adapter.Fill(ds);
+                fillBoxes();
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                // закрываем подключение
+                sqlConnection.Close();
+            }
+        }
+
+        private void addBtn_Click(object sender, EventArgs e)
+        {
+            string dishName = this.textBox2.Text;
+            decimal dishPrice = 0;
+            bool dishPriceIsnumber = false;
+            if (dishName == "" || this.comboBox1.SelectedItem == null || this.textBox3.Text == "")
+            {
+                MessageBox.Show("Для добавления блюда все поля должны быть заполнены,кроме ID");
+            }
+            else
+            {
+                dishPriceIsnumber = decimal.TryParse(this.textBox3.Text, out dishPrice);
+                if (!dishPriceIsnumber || dishPrice <= 0)
+                {
+                    MessageBox.Show("Цена может быть целым или дробным числом и должна быть больше нуля");
+                }
+                else
+                {
+                    
+                    DataRow[] dishCandidate = dishesTable.Select().Where(r=>r["dish_name"].ToString().ToLower() == dishName.ToLower()).ToArray();
+                    if (dishCandidate.Length > 0)
+                    {
+                        MessageBox.Show("Такое блюдо уже существует");
+                    }
+                    else
+                    {
+                        try
+                        {
+                            selectedDishType = (string)this.comboBox1.SelectedItem;
+                            sqlConnection.Open();
+                            DataRow newRow = dishesTable.NewRow();
+                            newRow["dish_name"] = dishName;
+                            newRow["dish_price"] = dishPrice;
+                            int dishTypeId = 0;
+                            foreach (DataRow row in dishTypeTable.Rows)
+                            {
+                                if (row["dishType_name"] == selectedDishType)
+                                {
+                                    dishTypeId = (int)row["dishType_id"];
+                                }
+                            }
+                            newRow["dishType_id"] = dishTypeId;
+                            dishesTable.Rows.Add(newRow);
+                            updateDataSet();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+                        finally
+                        {
+                            sqlConnection.Close();
+                            this.textBox1.Clear();
+                            this.textBox2.Clear();
+                            this.textBox3.Clear();
+                            this.comboBox1.Text = "";
+                        }
+                    }
+                }
+            }
+        }
+
+        private void changeBtn_Click(object sender, EventArgs e)
+        {
+            string dishId = this.textBox1.Text;
+            string dishName = this.textBox2.Text;
+            decimal dishPrice = 0;
+            bool dishPriceIsNumber = false;
+            selectedDishType = (string)this.comboBox1.SelectedItem;
+            int dishTypeId = 0;
+
+            if (dishId == "")
+            {
+                MessageBox.Show("Укажите ID блюда, которое вы хотите изменить");
+            }
+
+            else if (dishName == "" && selectedDishType == null && this.textBox3.Text == "")
+            {
+                MessageBox.Show("Заполните хотя бы одно поле,которое вы хотите изменить");
+            }
+            else
+            {
+                if (selectedDishType != null)
+                {
+                    foreach (DataRow row in dishTypeTable.Rows)
+                    {
+                        if (row["dishType_name"] == selectedDishType)
+                        {
+                            dishTypeId = (int)row["dishType_id"];
+                        }
+                    }
+                }
+                if(dishName != "")
+                {
+                    DataRow[] dishCandidate = dishesTable.Select().Where(r => r["dish_name"].ToString().ToLower() == dishName.ToLower()).ToArray();
+                    if (dishCandidate.Length > 0)
+                    {
+                        MessageBox.Show("Такое блюдо уже существует");
+                        return;
+                    }
+                }
+                if (this.textBox3.Text != "")
+                {
+                    dishPriceIsNumber = decimal.TryParse(this.textBox3.Text, out dishPrice);
+                    if (!dishPriceIsNumber || dishPrice <= 0)
+                    {
+                        MessageBox.Show("Цена блюда должна быть больше нуля и числом");
+                        return;
+                    }
+                }
+                DataRow[] dishesRows = dishesTable.Select($"dish_id = {dishId}");
+                if (dishesRows.Length == 0)
+                {
+                    MessageBox.Show("Блюда с таким ID не существует");
+                }
+                else
+                {
+                    try
+                    {
+                        sqlConnection.Open();
+                        DataRow dish = dishesRows[0];
+                        dish["dish_name"] = dishName == "" ? dish["dish_name"] : dishName;
+                        dish["dishType_id"] = selectedDishType == null ? dish["dishType_id"] : dishTypeId;
+                        dish["dish_price"] = dishPrice > 0 ? dishPrice : dish["dish_price"];
+                        updateDataSet();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                    finally
+                    {
+                        sqlConnection.Close();
+                        this.textBox1.Clear();
+                        this.textBox2.Clear();
+                        this.textBox3.Clear();
+                        this.comboBox1.Text = "";
+                    }
+                }
+            }
+        }
+
+        private void deleteBtn_Click(object sender, EventArgs e)
+        {
+            string dishId = this.textBox1.Text;
+            if (dishId == "")
+            {
+                MessageBox.Show("Укажите ID блюда чтобы удалить его");
+            }
+            else
+            {
+                DataRow[] dishRows = dishesTable.Select($"dish_id = {dishId}");
+                if (dishRows.Length == 0)
+                {
+                    MessageBox.Show("Блюда с таким Id не существует");
+                }
+                else
+                {
+                    try
+                    {
+                        sqlConnection.Open();
+                        dishRows[0].Delete();
+                        updateDataSet();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                    finally
+                    {
+                        sqlConnection.Close();
+                        this.textBox1.Clear();
+                        this.textBox2.Clear();
+                        this.textBox3.Clear();
+                        this.comboBox1.Text = "";
+                    }
+                }
+            }
+        }
+
+        private void moreInfoBtn_Click(object sender, EventArgs e)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("* Для добавления блюда заполните все поля кроме ID\n");
+            sb.AppendLine("* Для изменения блюда обязательно заполните поле ID и одно или несколько полей,которые вы хотите изменить\n");
+            sb.AppendLine("* Для удаления продукта заполните поле ID");
+            MessageBox.Show(sb.ToString());
+        }
+
+        private void updateDataSet()
+        {
+            commandBuilder = new SqlCommandBuilder(adapter);
+            adapter.Update(ds);
+            this.comboBox1.Items.Clear();
+            ds.Clear();
+            adapter.Fill(ds);
+            fillBoxes();
+        }
+
+
+        private void fillBoxes()
+        {
+            dishesTable = ds.Tables[0];
+            dishTypeTable = ds.Tables[1];
+            dataGridViewTable = updateData();
+            foreach (DataRow row in dishTypeTable.Rows)
+            {
+                this.comboBox1.Items.Add(row["dishType_name"]);
+            }
+            this.dataGridView1.DataSource = dataGridViewTable;
+        }
+
+        private DataTable updateData()
+        {
+            DataTable table = new DataTable();
+            var collection = from t1 in dishesTable.AsEnumerable()
+                             join t2 in dishTypeTable.AsEnumerable()
+                                on t1["dishType_id"] equals t2["dishType_id"]
+                             select new { dishId = t1["dish_id"], dishName = t1["dish_name"], dishPrice = t1["dish_price"], dishTypeName = t2["dishType_name"] };
+            table.Columns.Add("dish_id", typeof(int));
+            table.Columns.Add("dish_name", typeof(string));
+            table.Columns.Add("dish_price", typeof(decimal));
+            table.Columns.Add("dishType_name", typeof(string));
+            foreach (var item in collection)
+            {
+                table.Rows.Add(item.dishId, item.dishName, Math.Round((decimal)item.dishPrice), item.dishTypeName);
+            }
+            return table;
+
         }
     }
 }

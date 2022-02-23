@@ -73,3 +73,5 @@ C:\Other\C#\Lab1-RKP\obj\Debug\Lab1-RKP.pdb
 C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.UnitsForm.resources
 C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.ProductsForm.resources
 C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.RecipesForm.resources
+C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.DishTypesForm.resources
+C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.DishesForm.resources

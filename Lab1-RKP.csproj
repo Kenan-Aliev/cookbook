@@ -78,6 +78,7 @@
       <HintPath>packages\System.Configuration.ConfigurationManager.5.0.0\lib\net461\System.Configuration.ConfigurationManager.dll</HintPath>
     </Reference>
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.Entity" />
     <Reference Include="System.Data.OracleClient" />
     <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.4.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Diagnostics.DiagnosticSource.4.6.0\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
@@ -206,6 +207,12 @@
     <Compile Include="UnitsForm.Designer.cs">
       <DependentUpon>UnitsForm.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="DishesForm.resx">
+      <DependentUpon>DishesForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DishTypesForm.resx">
+      <DependentUpon>DishTypesForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ProductsForm.resx">
       <DependentUpon>ProductsForm.cs</DependentUpon>
     </EmbeddedResource>

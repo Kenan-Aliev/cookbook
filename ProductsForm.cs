@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
@@ -22,6 +24,7 @@ namespace Lab1_RKP
 
         private DataTable productsTable;
         private DataTable unitsTable;
+        private DataTable dataGridViewTable;
 
         private string selectedUnit;
         public ProductsForm()
@@ -43,7 +46,7 @@ namespace Lab1_RKP
                 adapter = new SqlDataAdapter("Select * from products;Select * from units", sqlConnection);
                 ds = new DataSet();
                 adapter.Fill(ds);
-                fillBoxes();
+                fillTables();
             }
             catch (SqlException ex)
             {
@@ -67,36 +70,46 @@ namespace Lab1_RKP
             }
             else
             {
-                try
-                {
-                    selectedUnit = (string)this.comboBox1.SelectedItem;
-                    sqlConnection.Open();
-                    DataRow newRow = productsTable.NewRow();
-                    newRow["product_name"] = productName;
-                    newRow["product_price"] = price;
-                    int unitId = 0;
-                    foreach (DataRow row in unitsTable.Rows)
-                    {
-                        if (row["unit_name"] == selectedUnit)
-                        {
-                            unitId = (int)row["unit_id"];
-                        }
-                    }
-                    newRow["unit_id"] = unitId;
-                    productsTable.Rows.Add(newRow);
-                    updateDataSet();
-                } catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-                finally
-                {
-                    sqlConnection.Close();
-                    this.textBox1.Clear();
-                    this.textBox2.Clear();
-                    this.textBox3.Clear();
-                }
 
+                DataRow[] productCandidate = productsTable.Select().Where(r => r["product_name"].ToString().ToLower() == productName.ToLower()).ToArray();
+                if (productCandidate.Length > 0)
+                {
+                    MessageBox.Show("Такой продукт уже существует");
+                }
+                else
+                {
+                    try
+                    {
+                        selectedUnit = (string)this.comboBox1.SelectedItem;
+                        sqlConnection.Open();
+                        DataRow newRow = productsTable.NewRow();
+                        newRow["product_name"] = productName;
+                        newRow["product_price"] = price;
+                        int unitId = 0;
+                        foreach (DataRow row in unitsTable.Rows)
+                        {
+                            if (row["unit_name"] == selectedUnit)
+                            {
+                                unitId = (int)row["unit_id"];
+                            }
+                        }
+                        newRow["unit_id"] = unitId;
+                        productsTable.Rows.Add(newRow);
+                        updateDataSet();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                    finally
+                    {
+                        sqlConnection.Close();
+                        this.textBox1.Clear();
+                        this.textBox2.Clear();
+                        this.textBox3.Clear();
+                        this.comboBox1.Text = "";
+                    }
+                }
             }
         }
 
@@ -108,25 +121,23 @@ namespace Lab1_RKP
             int price = 0;
             int unitId = 0;
             bool priceIsNumber = false;
-
+            DataRow[] productsRows = productsTable.Select($"product_id = {productId}");
+           
             if (productId == "")
             {
                 MessageBox.Show("Укажите ID продукта, который вы хотите изменить");
             }
-            else if (this.textBox3.Text != "")
-            {
-                priceIsNumber = int.TryParse(this.textBox3.Text, out price);
-                if (!priceIsNumber)
-                {
-                    MessageBox.Show("Цена должна быть числом");
-                }
-            }
-            else if (productName == "" && price == 0 && selectedUnit == null)
+
+            else if (productName == "" && this.textBox3.Text == "" && selectedUnit == null)
             {
                 MessageBox.Show("Заполните хотя бы одно поле,которое вы хотите изменить");
             }
-            else{
-                Console.WriteLine("else ");
+            else if (productsRows.Length == 0)
+            {
+                MessageBox.Show("Продукта с таким ID не существует");
+            }
+            else 
+            { 
                 if (selectedUnit != null)
                 {
                     foreach (DataRow row in unitsTable.Rows)
@@ -137,69 +148,87 @@ namespace Lab1_RKP
                         }
                     }
                 }
-                try
+                if (this.textBox3.Text != "")
                 {
-                   
-                    sqlConnection.Open();
-                    DataRow[] productsRows = productsTable.Select($"product_id = {productId}");
-                    if (productsRows.Length == 0)
+                    priceIsNumber = int.TryParse(this.textBox3.Text, out price);
+                    if (!priceIsNumber || price <= 0)
                     {
-                        MessageBox.Show("Продукта с таким ID не существует");
+                        MessageBox.Show("Цена должна быть числом и больше нуля");
+                        return;
                     }
-                    else
+                }
+
+                if (productName != "")
+                {
+                    DataRow[] productCandidate = productsTable.Select().Where(r => r["product_name"].ToString().ToLower() == productName.ToLower()).ToArray();
+                    if (productCandidate.Length > 0)
                     {
+                        MessageBox.Show("Такой продукт уже существует");
+                        return;
+                    }
+                }
+                
+                else
+                {
+                    try
+                    {
+                        sqlConnection.Open();
                         DataRow product = productsRows[0];
                         product["product_name"] = productName == "" ? product["product_name"] : productName;
                         product["product_price"] = price > 0 ? price : product["product_price"];
                         product["unit_id"] = selectedUnit == null ? product["unit_id"] : unitId;
                         updateDataSet();
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-                finally
-                {
-                    sqlConnection.Close();
-                    this.textBox1.Clear();
-                    this.textBox2.Clear();
-                    this.textBox3.Clear();
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                    finally
+                    {
+                        sqlConnection.Close();
+                        this.textBox1.Clear();
+                        this.textBox2.Clear();
+                        this.textBox3.Clear();
+                        this.comboBox1.Text = "";
+                    }
                 }
             }
         }
+
         private void deleteBtn_Click(object sender, EventArgs e)
         {
             string productId = this.textBox1.Text;
-            if(productId == "")
+            if (productId == "")
             {
                 MessageBox.Show("Укажите ID продукта чтобы удалить его");
             }
             else
             {
-                try
+                DataRow[] productRows = productsTable.Select($"product_id = {productId}");
+                if (productRows.Length == 0)
                 {
-                    sqlConnection.Open();
-                    DataRowCollection productsCollection = productsTable.Rows;
-                    DataRow[] productRows = productsTable.Select($"product_id = {productId}");
-                    if (productRows.Length == 0)
+                    MessageBox.Show("Элемента с таким Id не существует");
+                }
+                else
+                {
+                    try
                     {
-                        MessageBox.Show("Элемента с таким Id не существует");
-                    }
-                    else
-                    {
+                        sqlConnection.Open();
                         productRows[0].Delete();
                         updateDataSet();
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-                finally
-                {
-                    sqlConnection.Close();
-                    this.textBox1.Clear();
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                    finally
+                    {
+                        sqlConnection.Close();
+                        this.textBox1.Clear();
+                        this.textBox2.Clear();
+                        this.textBox3.Clear();
+                        this.comboBox1.Text = "";
+                    }
                 }
             }
         }
@@ -220,19 +249,40 @@ namespace Lab1_RKP
             this.comboBox1.Items.Clear();
             ds.Clear();
             adapter.Fill(ds);
-            fillBoxes();
+            fillTables();
         }
 
 
-        private void fillBoxes()
+        private void fillTables()
         {
             productsTable = ds.Tables[0];
             unitsTable = ds.Tables[1];
+            dataGridViewTable = updateData();
+
             foreach (DataRow row in unitsTable.Rows)
             {
                 this.comboBox1.Items.Add(row["unit_name"]);
             }
-            this.dataGridView1.DataSource = productsTable;
+            this.dataGridView1.DataSource = dataGridViewTable;
+        }
+
+        private DataTable updateData()
+        {
+            DataTable table = new DataTable();
+            var collection = from t1 in productsTable.AsEnumerable()
+                             join t2 in unitsTable.AsEnumerable()
+                                on t1["unit_id"] equals t2["unit_id"]
+                             select new { productId = t1["product_id"], productName = t1["product_name"], productPrice = t1["product_price"], unitName = t2["unit_name"] };
+            table.Columns.Add("product_id", typeof(int));
+            table.Columns.Add("product_name", typeof(string));
+            table.Columns.Add("product_price", typeof(int));
+            table.Columns.Add("unit_name", typeof(string));
+            foreach(var item in collection)
+            {
+                table.Rows.Add(item.productId, item.productName, item.productPrice, item.unitName);
+            }
+            return table;
+
         }
     }
 }

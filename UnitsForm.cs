@@ -4,7 +4,7 @@ using System.Data;
 using System.Text;
 using System.Windows.Forms;
 using System.Data.SqlClient;
-
+using System.Linq;
 
 namespace Lab1_RKP
 {
@@ -57,30 +57,37 @@ namespace Lab1_RKP
         private void addButton_Click(object sender, EventArgs e)
         {
             string unitName = this.textBox2.Text;
-            if(unitName == "" || this.textBox1.Text != "")
+            if(unitName == "")
             {
-                MessageBox.Show("Внимательно прочитайте как нужно добавлять новый элемент в базу");
+                MessageBox.Show("Для добавления единицы измерения заполните поле с названием");
             }
             else
             {
-                try
+                DataRow[] unitCandidate = dataTable.Select().Where(r => r["unit_name"].ToString().ToLower() == unitName.ToLower()).ToArray();
+                if(unitCandidate.Length > 0)
                 {
-                    sqlConnection.Open();
-                    DataRow newRow = dataTable.NewRow();
-                    newRow["unit_name"] = unitName;
-                    dataTable.Rows.Add(newRow);
-                    updateTable();
+                    MessageBox.Show("Такая единица измерения уже существует");
                 }
-                catch (Exception ex)
+                else
                 {
-                    Console.WriteLine(ex.Message);
+                    try
+                    {
+                        sqlConnection.Open();
+                        DataRow newRow = dataTable.NewRow();
+                        newRow["unit_name"] = unitName;
+                        dataTable.Rows.Add(newRow);
+                        updateTable();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                    finally
+                    {
+                        sqlConnection.Close();
+                        this.textBox2.Clear();
+                    }
                 }
-                finally
-                {
-                    sqlConnection.Close();
-                    this.textBox2.Clear();
-                }
-               
             }
         }
 
@@ -90,34 +97,38 @@ namespace Lab1_RKP
             string unitId = this.textBox1.Text;
             if (unitName == "" || unitId == "")
             {
-                MessageBox.Show("Внимательно прочитайте как нужно изменять данные в базе");
+                MessageBox.Show("Чтобы изменить данные заполните поля ID и Название");
             }
             else
             {
-                try
+                DataRow[] unitRows = dataTable.Select($"unit_id = {unitId}");
+                DataRow[] unitCandidate = dataTable.Select().Where(r => r["unit_name"].ToString().ToLower() == unitName.ToLower()).ToArray();
+                if (unitRows.Length == 0)
                 {
-                    sqlConnection.Open();
-                    DataRow[] unitRows = dataTable.Select($"unit_id = {unitId}");
-                    if(unitRows.Length == 0)
+                    MessageBox.Show("Элемента с таким Id не существует");
+                }
+                else if (unitCandidate.Length > 0)
+                {
+                    MessageBox.Show("Такая единица измерения уже существует");
+                }
+                else
+                {
+                    try
                     {
-                        MessageBox.Show("Элемента с таким Id не существует");
-                    }
-                    else
-                    {
+                        sqlConnection.Open();
                         unitRows[0]["unit_name"] = unitName;
                         updateTable();
                     }
-                  
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-                finally
-                {
-                    sqlConnection.Close();
-                    this.textBox1.Clear();
-                    this.textBox2.Clear();
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                    finally
+                    {
+                        sqlConnection.Close();
+                        this.textBox1.Clear();
+                        this.textBox2.Clear();
+                    }
                 }
             }
         }
@@ -131,30 +142,30 @@ namespace Lab1_RKP
             }
             else
             {
-                try
+                DataRow[] unitRows = dataTable.Select($"unit_id = {unitId}");
+                if (unitRows.Length == 0)
                 {
-                    sqlConnection.Open();
-                    DataRow[] unitRows = dataTable.Select($"unit_id = {unitId}");
-                    if (unitRows.Length == 0)
+                    MessageBox.Show("Элемента с таким Id не существует");
+                }
+                else
+                {
+                    try
                     {
-                        MessageBox.Show("Элемента с таким Id не существует");
-                    }
-                    else
-                    {
+                        sqlConnection.Open();
                         unitRows[0].Delete();
                         updateTable();
                     }
-
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                    finally
+                    {
+                        sqlConnection.Close();
+                        this.textBox1.Clear();
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-                finally
-                {
-                    sqlConnection.Close();
-                    this.textBox1.Clear();
-                }
+               
             }
         }
 
