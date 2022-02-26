@@ -75,3 +75,9 @@ C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.ProductsForm.resources
 C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.RecipesForm.resources
 C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.DishTypesForm.resources
 C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.DishesForm.resources
+C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.OrdersForm.resources
+C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.AddOrderForm.resources
+C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.OrderChangeForm.resources
+C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.ShowCheckForm.resources
+C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.MainForm.resources
+C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.ProfitReportForm.resources

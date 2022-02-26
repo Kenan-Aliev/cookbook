@@ -167,6 +167,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddOrderForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddOrderForm.Designer.cs">
+      <DependentUpon>AddOrderForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="DishesForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -187,11 +193,29 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="OrderChangeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="OrderChangeForm.Designer.cs">
+      <DependentUpon>OrderChangeForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="OrdersForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="OrdersForm.Designer.cs">
+      <DependentUpon>OrdersForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="ProductsForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="ProductsForm.Designer.cs">
       <DependentUpon>ProductsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ProfitReportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ProfitReportForm.Designer.cs">
+      <DependentUpon>ProfitReportForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -201,20 +225,41 @@
     <Compile Include="RecipesForm.Designer.cs">
       <DependentUpon>RecipesForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="ShowCheckForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ShowCheckForm.Designer.cs">
+      <DependentUpon>ShowCheckForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="UnitsForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="UnitsForm.Designer.cs">
       <DependentUpon>UnitsForm.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="AddOrderForm.resx">
+      <DependentUpon>AddOrderForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="DishesForm.resx">
       <DependentUpon>DishesForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="DishTypesForm.resx">
       <DependentUpon>DishTypesForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="OrderChangeForm.resx">
+      <DependentUpon>OrderChangeForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="OrdersForm.resx">
+      <DependentUpon>OrdersForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ProductsForm.resx">
       <DependentUpon>ProductsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ProfitReportForm.resx">
+      <DependentUpon>ProfitReportForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -227,6 +272,9 @@
     </Compile>
     <EmbeddedResource Include="RecipesForm.resx">
       <DependentUpon>RecipesForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ShowCheckForm.resx">
+      <DependentUpon>ShowCheckForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UnitsForm.resx">
       <DependentUpon>UnitsForm.cs</DependentUpon>

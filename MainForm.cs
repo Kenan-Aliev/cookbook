@@ -15,7 +15,7 @@ namespace Lab1_RKP
         private List<FormBtnsSettings> mainFormBtnsSettings = new List<FormBtnsSettings>();
         private Color mainFormBtnsBackColor = Color.DarkBlue;
         private Color mainFormBtnsForeColor = Color.White;
-        private string[] mainFormBtnsTexts = { "Единицы измерения", "Продукты", "Виды блюд", "Блюда", "Рецепты" };
+        private string[] mainFormBtnsTexts = { "Единицы измерения", "Продукты", "Виды блюд", "Блюда", "Рецепты","Заказы","Отчет по прибыли" };
         private Size mainFormBtnsSize = new Size(100, 50);
         private Point mainFormBtnsLocation = new Point(100, 200);
         private FormsSettings formsSettings;
@@ -27,13 +27,14 @@ namespace Lab1_RKP
             Text = formsSettings.Text;
             this.BackColor = formsSettings.BackColor;
             this.Location = formsSettings.Location;
+            this.Size = new Size(900, 500);
             AddSettingsToList();
             this.Load += Load_MainForm;
         }
 
         private void AddSettingsToList()
         {
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 7; i++)
             {
                 mainFormBtnsLocation.X = 100 + 100 * i;
                 mainFormBtnsSettings.Add(new FormBtnsSettings(mainFormBtnsTexts[i], mainFormBtnsBackColor, mainFormBtnsForeColor, mainFormBtnsSize, mainFormBtnsLocation));
@@ -86,6 +87,14 @@ namespace Lab1_RKP
                 case "btn5":
                     RecipesForm recipesForm = new RecipesForm();
                     recipesForm.Show();
+                    break;
+                case "btn6":
+                    OrdersForm ordersFrom = new OrdersForm();
+                    ordersFrom.Show();
+                    break;
+                case "btn7":
+                    ProfitReportForm profitReportForm = new ProfitReportForm();
+                    profitReportForm.Show();
                     break;
             }
         }
