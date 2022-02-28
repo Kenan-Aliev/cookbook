@@ -30,8 +30,6 @@ namespace Lab1_RKP
         private void InitializeComponent()
         {
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.textBox2 = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
@@ -51,30 +49,14 @@ namespace Lab1_RKP
             this.dataGridView1.RowTemplate.Height = 24;
             this.dataGridView1.Size = new System.Drawing.Size(799, 199);
             this.dataGridView1.TabIndex = 0;
-            // 
-            // textBox1
-            // 
-            this.textBox1.BackColor = System.Drawing.Color.White;
-            this.textBox1.Location = new System.Drawing.Point(30, 26);
-            this.textBox1.Name = "inputId";
-            this.textBox1.Size = new System.Drawing.Size(109, 22);
-            this.textBox1.TabIndex = 1;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.ForeColor = System.Drawing.Color.Red;
-            this.label1.Location = new System.Drawing.Point(3, 31);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(21, 17);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "ID";
+            this.dataGridView1.CellMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataGridView1_CellMouseClick);
+            this.dataGridView1.CellMouseDoubleClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataGridView1_CellMouseDoubleClick);
             // 
             // label3
             // 
             this.label3.AutoSize = true;
             this.label3.ForeColor = System.Drawing.Color.Red;
-            this.label3.Location = new System.Drawing.Point(157, 31);
+            this.label3.Location = new System.Drawing.Point(31, 33);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(72, 17);
             this.label3.TabIndex = 4;
@@ -82,8 +64,8 @@ namespace Lab1_RKP
             // 
             // textBox2
             // 
-            this.textBox2.Location = new System.Drawing.Point(235, 28);
-            this.textBox2.Name = "inputName";
+            this.textBox2.Location = new System.Drawing.Point(109, 30);
+            this.textBox2.Name = "textBox2";
             this.textBox2.Size = new System.Drawing.Size(168, 22);
             this.textBox2.TabIndex = 5;
             // 
@@ -92,7 +74,7 @@ namespace Lab1_RKP
             this.button1.BackColor = System.Drawing.Color.Blue;
             this.button1.ForeColor = System.Drawing.Color.White;
             this.button1.Location = new System.Drawing.Point(339, 150);
-            this.button1.Name = "addBtn";
+            this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(114, 42);
             this.button1.TabIndex = 6;
             this.button1.Text = "Добавить";
@@ -104,7 +86,7 @@ namespace Lab1_RKP
             this.button2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
             this.button2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.button2.Location = new System.Drawing.Point(502, 150);
-            this.button2.Name = "changeBtn";
+            this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(114, 42);
             this.button2.TabIndex = 7;
             this.button2.Text = "Изменить";
@@ -116,7 +98,7 @@ namespace Lab1_RKP
             this.button3.BackColor = System.Drawing.Color.Red;
             this.button3.ForeColor = System.Drawing.Color.White;
             this.button3.Location = new System.Drawing.Point(653, 150);
-            this.button3.Name = "deleteBtn";
+            this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(114, 42);
             this.button3.TabIndex = 8;
             this.button3.Text = "Удалить";
@@ -128,7 +110,7 @@ namespace Lab1_RKP
             this.button4.BackColor = System.Drawing.Color.Teal;
             this.button4.ForeColor = System.Drawing.Color.White;
             this.button4.Location = new System.Drawing.Point(653, 31);
-            this.button4.Name = "moreInfoBtn";
+            this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(114, 42);
             this.button4.TabIndex = 9;
             this.button4.Text = "Подробная информация";
@@ -146,8 +128,6 @@ namespace Lab1_RKP
             this.Controls.Add(this.button1);
             this.Controls.Add(this.textBox2);
             this.Controls.Add(this.label3);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.textBox1);
             this.Controls.Add(this.dataGridView1);
             this.Name = "UnitsForm";
             this.Text = "UnitsForm";
@@ -160,8 +140,6 @@ namespace Lab1_RKP
         #endregion
 
         private System.Windows.Forms.DataGridView dataGridView1;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox textBox2;
         private System.Windows.Forms.Button button1;

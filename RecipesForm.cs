@@ -32,6 +32,8 @@ namespace Lab1_RKP
 
         private string selectedProduct;
         private string selectedDish;
+        private int updateRecipeId = -1;
+        private int deleteRecipeId = -1;
 
         public RecipesForm()
         {
@@ -137,10 +139,11 @@ namespace Lab1_RKP
                     finally
                     {
                         sqlConnection.Close();
-                        this.textBox1.Clear();
                         this.textBox2.Clear();
                         this.comboBox1.Text = "";
                         this.comboBox2.Text = "";
+                        updateRecipeId = -1;
+                        deleteRecipeId = -1;
                     }
                 }
             }
@@ -148,7 +151,6 @@ namespace Lab1_RKP
 
         private void changeBtn_Click(object sender, EventArgs e)
         {
-            int recipeId = 0;
 
             DataRow product = null;
             DataRow recipe = null;
@@ -156,16 +158,14 @@ namespace Lab1_RKP
             selectedProduct = (string)this.comboBox2.SelectedItem;
             decimal productAmount = 0;
 
-            bool recipeIdIsNumber = int.TryParse(this.textBox1.Text, out recipeId);
 
-
-            if (this.textBox1.Text == "" || this.comboBox1.SelectedItem == null)
+            if(updateRecipeId == -1)
             {
-                MessageBox.Show("Для изменения рецепта блюда укажите ID рецепта и название блюда");
+                MessageBox.Show("Для изменения рецепта блюда выберите нужное поле");
             }
-            else if (this.textBox1.Text != "" && !recipeIdIsNumber)
+            else if (this.comboBox1.SelectedItem == null)
             {
-                MessageBox.Show("ID должно быть числом");
+                MessageBox.Show("Для изменения рецепта блюда укажите название блюда");
             }
             else if (this.textBox2.Text == "" && this.comboBox2.SelectedItem == null)
             {
@@ -188,7 +188,7 @@ namespace Lab1_RKP
                         return;
                     }
                 }
-                DataRow[] recipes = recipesTable.Select($"recipe_id = {recipeId}");
+                DataRow[] recipes = recipesTable.Select($"recipe_id = {updateRecipeId}");
                 if (recipes.Length == 0)
                 {
                     MessageBox.Show("Рецепта с таким ID не существует");
@@ -230,10 +230,11 @@ namespace Lab1_RKP
                         finally
                         {
                             sqlConnection.Close();
-                            this.textBox1.Clear();
                             this.textBox2.Clear();
                             this.comboBox1.Text = "";
                             this.comboBox2.Text = "";
+                            updateRecipeId = -1;
+                            deleteRecipeId = -1;
                         }
                     }
                 }
@@ -243,22 +244,15 @@ namespace Lab1_RKP
 
         private void deleteBtn_Click(object sender, EventArgs e)
         {
-            int recipeId = 0;
-            bool recipeIdIsNumber = false;
             DataRow recipe = null;
-            recipeIdIsNumber = int.TryParse(this.textBox1.Text, out recipeId);
 
-            if(this.textBox1.Text == "")
+            if(deleteRecipeId == -1)
             {
-                MessageBox.Show("Для удаления рецепта укажите его ID");
-            }
-            else if(this.textBox1.Text != "" && !recipeIdIsNumber)
-            {
-                MessageBox.Show("ID должно быть числом");
+                MessageBox.Show("Для удаления рецепта сначала выберите нужное поле");
             }
             else
             {
-                DataRow[] recipes = recipesTable.Select($"recipe_id = {recipeId}");
+                DataRow[] recipes = recipesTable.Select($"recipe_id = {deleteRecipeId}");
                 if(recipes.Length == 0)
                 {
                     MessageBox.Show("Рецепта с таким ID не существует");
@@ -280,10 +274,11 @@ namespace Lab1_RKP
                     finally
                     {
                         sqlConnection.Close();
-                        this.textBox1.Clear();
                         this.textBox2.Clear();
                         this.comboBox1.Text = "";
                         this.comboBox2.Text = "";
+                        updateRecipeId = -1;
+                        deleteRecipeId = -1;
                     }
                 }
             }
@@ -321,6 +316,7 @@ namespace Lab1_RKP
             }
 
             this.dataGridView1.DataSource = dataGridViewTable;
+            this.dataGridView1.Columns["recipe_id"].Visible = false;
         }
 
         private DataTable updateData()
@@ -331,6 +327,7 @@ namespace Lab1_RKP
                               on t1["product_id"] equals t2["product_id"]
                              join t3 in dishesTable.AsEnumerable()
                                on t1["dish_id"] equals t3["dish_id"]
+                               orderby t2["product_name"],t3["dish_name"]
                              select new { recipeId = t1["recipe_id"], productAmount = t1["product_amount"], productName = t2["product_name"], dishName = t3["dish_name"] };
             table.Columns.Add("recipe_id", typeof(int));
             table.Columns.Add("product_amount", typeof(decimal));
@@ -342,6 +339,40 @@ namespace Lab1_RKP
             }
             return table;
 
+        }
+        private void dataGridView1_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex > -1)
+            {
+                DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
+                if (row.Cells[0].Value.ToString() == "")
+                {
+                    updateRecipeId = -1;
+                }
+                else
+                {
+                    this.textBox2.Text = row.Cells[1].Value.ToString();
+                    this.comboBox1.Text = row.Cells[3].Value.ToString();
+                    this.comboBox2.Text = row.Cells[2].Value.ToString();
+                    updateRecipeId = (int)row.Cells[0].Value;
+                }
+            }
+        }
+
+        private void dataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex > -1)
+            {
+                DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
+                if (row.Cells[0].Value.ToString() == "")
+                {
+                    deleteRecipeId = -1;
+                }
+                else
+                {
+                    deleteRecipeId = (int)row.Cells[0].Value;
+                }
+            }
         }
     }
 }

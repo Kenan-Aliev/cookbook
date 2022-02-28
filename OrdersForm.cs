@@ -181,6 +181,7 @@ namespace Lab1_RKP
                 this.checkedListBox1.Items.Add(dish["dish_name"]);
             }
             this.dataGridView1.DataSource = ordersTable;
+            this.dataGridView1.Columns["order_id"].Visible = false;
         }
 
         private void dataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)

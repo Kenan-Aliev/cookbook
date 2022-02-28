@@ -39,6 +39,8 @@ namespace Lab1_RKP
             decimal orderedDishesSumForWeek;
             decimal orderedDishesSumForMonth;
 
+
+
             try
             {
                 productsSumForDay = getUsedProductsSumForDate("day");
@@ -55,6 +57,7 @@ namespace Lab1_RKP
                 MessageBox.Show(ex.Message);
                 return;
             }
+
 
             Label label1 = new Label();
             label1.Text = productsSumForDay.ToString() + " сом";
@@ -153,9 +156,15 @@ namespace Lab1_RKP
                 };
                 // добавляем параметр
                 command.Parameters.Add(sumParam);
-
                 command.ExecuteNonQuery();
-                return Math.Round((decimal)command.Parameters["@sum"].Value, 2);
+                if(command.Parameters["@sum"].Value.ToString() == "")
+                {
+                    return 0;
+                }
+                else
+                {
+                    return Math.Round((decimal)command.Parameters["@sum"].Value, 2);
+                }
             }
             catch(Exception ex)
             {
@@ -200,7 +209,14 @@ namespace Lab1_RKP
                 command.Parameters.Add(sumParam);
 
                 command.ExecuteNonQuery();
-                return Math.Round((decimal)command.Parameters["@sum"].Value, 2);
+                if (command.Parameters["@sum"].Value.ToString() == "")
+                {
+                    return 0;
+                }
+                else
+                {
+                    return Math.Round((decimal)command.Parameters["@sum"].Value, 2);
+                }
             }
             catch (Exception ex)
             {

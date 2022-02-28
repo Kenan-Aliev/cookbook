@@ -26,6 +26,9 @@ namespace Lab1_RKP
         private DataTable unitsTable;
         private DataTable dataGridViewTable;
 
+
+        private int updateProductId = -1;
+        private int deleteProductId = -1;
         private string selectedUnit;
         public ProductsForm()
         {
@@ -43,7 +46,7 @@ namespace Lab1_RKP
             {
                 // Открываем подключение
                 sqlConnection.Open();
-                adapter = new SqlDataAdapter("Select * from products;Select * from units", sqlConnection);
+                adapter = new SqlDataAdapter("Select * from products order by product_name;Select * from units", sqlConnection);
                 ds = new DataSet();
                 adapter.Fill(ds);
                 fillTables();
@@ -104,10 +107,11 @@ namespace Lab1_RKP
                     finally
                     {
                         sqlConnection.Close();
-                        this.textBox1.Clear();
                         this.textBox2.Clear();
                         this.textBox3.Clear();
                         this.comboBox1.Text = "";
+                        updateProductId = -1;
+                        deleteProductId = -1;
                     }
                 }
             }
@@ -115,17 +119,17 @@ namespace Lab1_RKP
 
         private void changeBtn_Click(object sender, EventArgs e)
         {
-            string productId = this.textBox1.Text;
             string productName = this.textBox2.Text;
             selectedUnit = (string)this.comboBox1.SelectedItem;
             int price = 0;
             int unitId = 0;
             bool priceIsNumber = false;
-            DataRow[] productsRows = productsTable.Select($"product_id = {productId}");
+            DataRow[] productsRows = productsTable.Select($"product_id = {updateProductId}");
+
            
-            if (productId == "")
+            if (updateProductId == -1)
             {
-                MessageBox.Show("Укажите ID продукта, который вы хотите изменить");
+                MessageBox.Show("Сначала выберите поле,которое хотите изменить");
             }
 
             else if (productName == "" && this.textBox3.Text == "" && selectedUnit == null)
@@ -167,44 +171,42 @@ namespace Lab1_RKP
                         return;
                     }
                 }
-                
-                else
+                try
                 {
-                    try
-                    {
-                        sqlConnection.Open();
-                        DataRow product = productsRows[0];
-                        product["product_name"] = productName == "" ? product["product_name"] : productName;
-                        product["product_price"] = price > 0 ? price : product["product_price"];
-                        product["unit_id"] = selectedUnit == null ? product["unit_id"] : unitId;
-                        updateDataSet();
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }
-                    finally
-                    {
-                        sqlConnection.Close();
-                        this.textBox1.Clear();
-                        this.textBox2.Clear();
-                        this.textBox3.Clear();
-                        this.comboBox1.Text = "";
-                    }
+                    Console.WriteLine($"{productName} {price} {selectedUnit}");
+                    sqlConnection.Open();
+                    DataRow product = productsRows[0];
+                    product["product_name"] = productName == "" ? product["product_name"] : productName;
+                    product["product_price"] = price > 0 ? price : product["product_price"];
+                    product["unit_id"] = selectedUnit == null ? product["unit_id"] : unitId;
+                    updateDataSet();
                 }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                finally
+                {
+                    sqlConnection.Close();
+                    this.textBox2.Clear();
+                    this.textBox3.Clear();
+                    this.comboBox1.Text = "";
+                    updateProductId = -1;
+                    deleteProductId = -1;
+                }
+                
             }
         }
 
         private void deleteBtn_Click(object sender, EventArgs e)
         {
-            string productId = this.textBox1.Text;
-            if (productId == "")
+            if (deleteProductId == -1)
             {
-                MessageBox.Show("Укажите ID продукта чтобы удалить его");
+                MessageBox.Show("Чтобы удалить продукт,сначала выберите нужное поле");
             }
             else
             {
-                DataRow[] productRows = productsTable.Select($"product_id = {productId}");
+                DataRow[] productRows = productsTable.Select($"product_id = {deleteProductId}");
                 if (productRows.Length == 0)
                 {
                     MessageBox.Show("Элемента с таким Id не существует");
@@ -224,10 +226,11 @@ namespace Lab1_RKP
                     finally
                     {
                         sqlConnection.Close();
-                        this.textBox1.Clear();
                         this.textBox2.Clear();
                         this.textBox3.Clear();
                         this.comboBox1.Text = "";
+                        updateProductId = -1;
+                        deleteProductId = -1;
                     }
                 }
             }
@@ -264,6 +267,7 @@ namespace Lab1_RKP
                 this.comboBox1.Items.Add(row["unit_name"]);
             }
             this.dataGridView1.DataSource = dataGridViewTable;
+            this.dataGridView1.Columns["product_id"].Visible = false;
         }
 
         private DataTable updateData()
@@ -283,6 +287,43 @@ namespace Lab1_RKP
             }
             return table;
 
+        }
+
+        private void dataGridView1_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex > -1)
+            {
+                DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
+                if (row.Cells[0].Value.ToString() == "")
+                {
+                    updateProductId = -1;
+                }
+                else
+                {
+                    this.textBox2.Text = (string)row.Cells[1].Value;
+                    this.comboBox1.Text = (string)row.Cells[3].Value;
+                    this.textBox3.Text = row.Cells[2].Value.ToString();
+                    updateProductId = (int)row.Cells[0].Value;
+                }
+                Console.WriteLine(updateProductId);
+            }
+        }
+
+        private void dataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex > -1)
+            {
+                DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
+                if (row.Cells[0].Value.ToString() == "")
+                {
+                    deleteProductId = -1;
+                }
+                else
+                {
+                    deleteProductId = (int)row.Cells[0].Value;
+                }
+                Console.WriteLine(updateProductId);
+            }
         }
     }
 }

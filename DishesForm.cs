@@ -31,6 +31,9 @@ namespace Lab1_RKP
         private DataTable dataGridViewTable;
 
         private string selectedDishType;
+        private int updateDishId = -1;
+        private int deleteDishId = -1;
+
         public DishesForm()
         {
             InitializeComponent();
@@ -47,7 +50,7 @@ namespace Lab1_RKP
             {
                 // Открываем подключение
                 sqlConnection.Open();
-                adapter = new SqlDataAdapter("Select * from dishes;Select * from dishTypes", sqlConnection);
+                adapter = new SqlDataAdapter("Select * from dishes order by dish_name;Select * from dishTypes", sqlConnection);
                 ds = new DataSet();
                 adapter.Fill(ds);
                 fillBoxes();
@@ -115,10 +118,11 @@ namespace Lab1_RKP
                         finally
                         {
                             sqlConnection.Close();
-                            this.textBox1.Clear();
                             this.textBox2.Clear();
                             this.textBox3.Clear();
                             this.comboBox1.Text = "";
+                            updateDishId = -1;
+                            deleteDishId = -1;
                         }
                     }
                 }
@@ -127,16 +131,15 @@ namespace Lab1_RKP
 
         private void changeBtn_Click(object sender, EventArgs e)
         {
-            string dishId = this.textBox1.Text;
             string dishName = this.textBox2.Text;
             decimal dishPrice = 0;
             bool dishPriceIsNumber = false;
             selectedDishType = (string)this.comboBox1.SelectedItem;
             int dishTypeId = 0;
 
-            if (dishId == "")
+            if (updateDishId == -1)
             {
-                MessageBox.Show("Укажите ID блюда, которое вы хотите изменить");
+                MessageBox.Show("Сначала выберите поле, которое вы хотите изменить");
             }
 
             else if (dishName == "" && selectedDishType == null && this.textBox3.Text == "")
@@ -173,7 +176,7 @@ namespace Lab1_RKP
                         return;
                     }
                 }
-                DataRow[] dishesRows = dishesTable.Select($"dish_id = {dishId}");
+                DataRow[] dishesRows = dishesTable.Select($"dish_id = {updateDishId}");
                 if (dishesRows.Length == 0)
                 {
                     MessageBox.Show("Блюда с таким ID не существует");
@@ -196,10 +199,11 @@ namespace Lab1_RKP
                     finally
                     {
                         sqlConnection.Close();
-                        this.textBox1.Clear();
                         this.textBox2.Clear();
                         this.textBox3.Clear();
                         this.comboBox1.Text = "";
+                        updateDishId = -1;
+                        deleteDishId = -1;
                     }
                 }
             }
@@ -207,14 +211,13 @@ namespace Lab1_RKP
 
         private void deleteBtn_Click(object sender, EventArgs e)
         {
-            string dishId = this.textBox1.Text;
-            if (dishId == "")
+            if (deleteDishId == -1)
             {
-                MessageBox.Show("Укажите ID блюда чтобы удалить его");
+                MessageBox.Show("Сначала выберите поле,которое вы хотите удалить");
             }
             else
             {
-                DataRow[] dishRows = dishesTable.Select($"dish_id = {dishId}");
+                DataRow[] dishRows = dishesTable.Select($"dish_id = {deleteDishId}");
                 if (dishRows.Length == 0)
                 {
                     MessageBox.Show("Блюда с таким Id не существует");
@@ -234,10 +237,11 @@ namespace Lab1_RKP
                     finally
                     {
                         sqlConnection.Close();
-                        this.textBox1.Clear();
                         this.textBox2.Clear();
                         this.textBox3.Clear();
                         this.comboBox1.Text = "";
+                        updateDishId = -1;
+                        deleteDishId = -1;
                     }
                 }
             }
@@ -273,6 +277,7 @@ namespace Lab1_RKP
                 this.comboBox1.Items.Add(row["dishType_name"]);
             }
             this.dataGridView1.DataSource = dataGridViewTable;
+            this.dataGridView1.Columns["dish_id"].Visible = false;
         }
 
         private DataTable updateData()
@@ -281,6 +286,7 @@ namespace Lab1_RKP
             var collection = from t1 in dishesTable.AsEnumerable()
                              join t2 in dishTypeTable.AsEnumerable()
                                 on t1["dishType_id"] equals t2["dishType_id"]
+                                orderby t1["dish_name"],t1["dish_price"],t2["dishType_name"]
                              select new { dishId = t1["dish_id"], dishName = t1["dish_name"], dishPrice = t1["dish_price"], dishTypeName = t2["dishType_name"] };
             table.Columns.Add("dish_id", typeof(int));
             table.Columns.Add("dish_name", typeof(string));
@@ -292,6 +298,41 @@ namespace Lab1_RKP
             }
             return table;
 
+        }
+
+        private void dataGridView1_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex > -1)
+            {
+                DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
+                if (row.Cells[0].Value.ToString() == "")
+                {
+                    updateDishId = -1;
+                }
+                else
+                {
+                    this.textBox2.Text = (string)row.Cells[1].Value;
+                    this.comboBox1.Text = row.Cells[3].Value.ToString();
+                    this.textBox3.Text = row.Cells[2].Value.ToString();
+                    updateDishId = (int)row.Cells[0].Value;
+                }
+            }
+        }
+
+        private void dataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex > -1)
+            {
+                DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
+                if (row.Cells[0].Value.ToString() == "")
+                {
+                    deleteDishId = -1;
+                }
+                else
+                {
+                    deleteDishId = (int)row.Cells[0].Value;
+                }
+            }
         }
     }
 }

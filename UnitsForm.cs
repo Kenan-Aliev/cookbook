@@ -20,6 +20,9 @@ namespace Lab1_RKP
 
         private SqlCommandBuilder commandBuilder;
 
+        private int updateUnitId = -1;
+        private int deleteUnitId = -1;
+
         public UnitsForm()
         {
             InitializeComponent();
@@ -38,10 +41,11 @@ namespace Lab1_RKP
                 {
                 // Открываем подключение
                 sqlConnection.Open();
-                adapter = new SqlDataAdapter("Select * from units", sqlConnection);
+                adapter = new SqlDataAdapter("Select * from units order by unit_name", sqlConnection);
                 dataTable = new DataTable();
                 adapter.Fill(dataTable);
                 this.dataGridView1.DataSource = dataTable;
+                this.dataGridView1.Columns["unit_id"].Visible = false;
                 }
                 catch (SqlException ex)
                 {
@@ -86,6 +90,8 @@ namespace Lab1_RKP
                     {
                         sqlConnection.Close();
                         this.textBox2.Clear();
+                        updateUnitId = -1;
+                        deleteUnitId = -1;
                     }
                 }
             }
@@ -94,14 +100,17 @@ namespace Lab1_RKP
         private void changeButton_Click(object sender, EventArgs e)
         {
             string unitName = this.textBox2.Text;
-            string unitId = this.textBox1.Text;
-            if (unitName == "" || unitId == "")
+            if(updateUnitId == -1)
             {
-                MessageBox.Show("Чтобы изменить данные заполните поля ID и Название");
+                MessageBox.Show("Для изменения единиицы измерения два раза нажмите по нужному полю");
+            }
+            else if(unitName == "")
+            {
+                MessageBox.Show("Чтобы изменить данные заполните поле Название");
             }
             else
             {
-                DataRow[] unitRows = dataTable.Select($"unit_id = {unitId}");
+                DataRow[] unitRows = dataTable.Select($"unit_id = {updateUnitId}");
                 DataRow[] unitCandidate = dataTable.Select().Where(r => r["unit_name"].ToString().ToLower() == unitName.ToLower()).ToArray();
                 if (unitRows.Length == 0)
                 {
@@ -126,8 +135,9 @@ namespace Lab1_RKP
                     finally
                     {
                         sqlConnection.Close();
-                        this.textBox1.Clear();
                         this.textBox2.Clear();
+                        updateUnitId = -1;
+                        deleteUnitId = -1;
                     }
                 }
             }
@@ -135,14 +145,13 @@ namespace Lab1_RKP
 
         private void deleteButton_Click(object sender, EventArgs e)
         {
-            string unitId = this.textBox1.Text;
-            if (this.textBox2.Text != "" || unitId == "")
+            if (deleteUnitId == -1)
             {
-                MessageBox.Show("Внимательно прочитайте как нужно удалять данные в базе");
+                MessageBox.Show("Чтобы удалить единицу измерения сначала выберите нужное поле одним нажатием на него");
             }
             else
             {
-                DataRow[] unitRows = dataTable.Select($"unit_id = {unitId}");
+                DataRow[] unitRows = dataTable.Select($"unit_id = {deleteUnitId}");
                 if (unitRows.Length == 0)
                 {
                     MessageBox.Show("Элемента с таким Id не существует");
@@ -162,10 +171,11 @@ namespace Lab1_RKP
                     finally
                     {
                         sqlConnection.Close();
-                        this.textBox1.Clear();
+                        deleteUnitId = -1;
+                        updateUnitId = -1;
                     }
                 }
-               
+
             }
         }
 
@@ -186,6 +196,38 @@ namespace Lab1_RKP
             adapter.Fill(dataTable);
             this.dataGridView1.DataSource = dataTable;
         }
-    
+
+        private void dataGridView1_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex > -1)
+            {
+                DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
+                if (row.Cells[0].Value.ToString() == "")
+                {
+                    updateUnitId = -1;
+                }
+                else
+                {
+                    this.textBox2.Text = (string)row.Cells[1].Value;
+                    updateUnitId = (int)row.Cells[0].Value;
+                }
+            }
+        }
+
+        private void dataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex > -1)
+            {
+                DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
+                if (row.Cells[0].Value.ToString() == "")
+                {
+                    deleteUnitId = -1;
+                }
+                else
+                {
+                    deleteUnitId = (int)row.Cells[0].Value;
+                }
+            }
+        }
     }
 }
