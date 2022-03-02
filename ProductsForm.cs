@@ -46,7 +46,7 @@ namespace Lab1_RKP
             {
                 // Открываем подключение
                 sqlConnection.Open();
-                adapter = new SqlDataAdapter("Select * from products order by product_name;Select * from units", sqlConnection);
+                adapter = new SqlDataAdapter("Select * from products order by product_name;Select * from units order by unit_name", sqlConnection);
                 ds = new DataSet();
                 adapter.Fill(ds);
                 fillTables();

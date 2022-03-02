@@ -81,3 +81,4 @@ C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.OrderChangeForm.resources
 C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.ShowCheckForm.resources
 C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.MainForm.resources
 C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.ProfitReportForm.resources
+C:\Other\C#\Lab1-RKP\obj\Debug\Lab1_RKP.RecipeAddForm.resources

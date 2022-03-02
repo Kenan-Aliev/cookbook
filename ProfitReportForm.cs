@@ -18,6 +18,8 @@ namespace Lab1_RKP
         static string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
         SqlConnection sqlConnection = new SqlConnection(connectionString);
 
+        private DataTable usedProductsTable;
+        private DataTable orderedDishesTable;
         public ProfitReportForm()
         {
             InitializeComponent();
@@ -31,192 +33,140 @@ namespace Lab1_RKP
 
         private void ProfitReportForm_Load(object sender,EventArgs e)
         {
-            decimal productsSumForDay;
-            decimal productsSumForWeek;
-            decimal productsSumForMonth;
+            usedProductsTable = new DataTable();
+            usedProductsTable.Columns.Add("product_name", typeof(string));
+            usedProductsTable.Columns.Add("unit_name", typeof(string));
+            usedProductsTable.Columns.Add("total_product_amount", typeof(decimal));
+            usedProductsTable.Columns.Add("total_product_price", typeof(decimal));
 
-            decimal orderedDishesSumForDay;
-            decimal orderedDishesSumForWeek;
-            decimal orderedDishesSumForMonth;
-
-
-
-            try
-            {
-                productsSumForDay = getUsedProductsSumForDate("day");
-                productsSumForWeek = getUsedProductsSumForDate("week");
-                productsSumForMonth = getUsedProductsSumForDate("month");
-
-                orderedDishesSumForDay = getOrderedDishesSumForDate("day");
-                orderedDishesSumForWeek = getOrderedDishesSumForDate("week");
-                orderedDishesSumForMonth = getOrderedDishesSumForDate("month");
-
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                return;
-            }
-
-
-            Label label1 = new Label();
-            label1.Text = productsSumForDay.ToString() + " сом";
-            label1.Location = new Point(228, 120);
-            label1.ForeColor = Color.Black;
-            this.Controls.Add(label1);
-
-
-            Label label2 = new Label();
-            label2.Text = orderedDishesSumForDay.ToString() + " сом";
-            label2.Location = new Point(390, 120);
-            label2.ForeColor = Color.Black;
-            this.Controls.Add(label2);
-
-
-            Label label3 = new Label();
-            label3.Text = (orderedDishesSumForDay - productsSumForDay).ToString() + " сом";
-            label3.Location = new Point(515, 120);
-            label3.ForeColor = Color.Black;
-            this.Controls.Add(label3);
+            orderedDishesTable = new DataTable();
+            orderedDishesTable.Columns.Add("dish_name", typeof(string));
+            orderedDishesTable.Columns.Add("dish_total_count", typeof(int));
+            orderedDishesTable.Columns.Add("dish_total_price", typeof(decimal));
 
 
 
-            Label label4 = new Label();
-            label4.Text = productsSumForWeek.ToString() + " сом";
-            label4.Location = new Point(228, 175);
-            label4.ForeColor = Color.Black;
-            this.Controls.Add(label4);
-
-
-            Label label5 = new Label();
-            label5.Text = orderedDishesSumForWeek.ToString() + " сом";
-            label5.Location = new Point(390, 175);
-            label5.ForeColor = Color.Black;
-            this.Controls.Add(label5);
-
-
-            Label label6 = new Label();
-            label6.Text = (orderedDishesSumForWeek - productsSumForWeek).ToString() + " сом";
-            label6.Location = new Point(515, 175);
-            label6.ForeColor = Color.Black;
-            this.Controls.Add(label6);
-
-
-
-            Label label7 = new Label();
-            label7.Text = productsSumForMonth.ToString() + " сом";
-            label7.Location = new Point(228, 225);
-            label7.ForeColor = Color.Black;
-            this.Controls.Add(label7);
-
-
-            Label label8 = new Label();
-            label8.Text = orderedDishesSumForMonth.ToString() + " сом";
-            label8.Location = new Point(390, 225);
-            label8.ForeColor = Color.Black;
-            this.Controls.Add(label8);
-
-
-            Label label9 = new Label();
-            label9.Text = (orderedDishesSumForMonth - productsSumForMonth).ToString() + " сом";
-            label9.Location = new Point(515, 225);
-            label9.ForeColor = Color.Black;
-            this.Controls.Add(label9);
-
+            this.textBox1.Enabled = false;
+            this.textBox2.Enabled = false;
+            this.textBox3.Enabled = false;
+            this.dataGridView1.DataSource = usedProductsTable;
+            this.dataGridView2.DataSource = orderedDishesTable;
         }
 
-        private decimal getUsedProductsSumForDate(string date)
+        private void getProfit_Click(object sender, EventArgs e)
         {
-             string sqlExpression = "";
-            switch (date)
+
+            DateTime startDate = this.dateTimePicker1.Value;
+            DateTime endDate = this.dateTimePicker2.Value;
+
+            int compareDates = startDate.CompareTo(endDate);
+
+            if(compareDates == 1)
             {
-                case "day":
-                    sqlExpression = "getUsedProductsSumForToday";
-                    break;
-                case "week":
-                    sqlExpression = "getUsedProductsSumForWeek";
-                    break;
-                case "month":
-                    sqlExpression = "getUsedProductsSumForMonth";
-                    break;
+                MessageBox.Show("Начальная дата должна быть раньше чем конечная");
             }
-           
+            else if(compareDates == 0)
+            {
+                MessageBox.Show("Если вы хотите посмотреть отчет за сегодняшний день,то в качестве начальной даты выберите вчерашний день");
+            }
+            else
+            {
+                try
+                {
+                    decimal usedProductsTotalPrice = 0;
+                    decimal orderedProductsTotalPrice = 0;
+                    decimal totalProfitPrice = 0;
+
+                    setUsedProductsForPeriod(startDate, endDate);
+                    setOrderedDishesForPeriod(startDate, endDate);
+
+                    if(usedProductsTable.Rows.Count == 0)
+                    {
+                        usedProductsTotalPrice = 0;
+                        this.textBox1.Text = usedProductsTotalPrice.ToString();
+                    }
+                    else
+                    {
+                        foreach(DataRow row in usedProductsTable.Rows)
+                        {
+                            usedProductsTotalPrice += (decimal)row["total_product_price"];
+                        }
+                        this.textBox1.Text = usedProductsTotalPrice.ToString() + "  сом";
+                    }
+
+                    if(orderedDishesTable.Rows.Count == 0)
+                    {
+                        orderedProductsTotalPrice = 0;
+                        this.textBox2.Text = orderedProductsTotalPrice.ToString();
+                    }
+                    else
+                    {
+                        foreach (DataRow row in orderedDishesTable.Rows)
+                        {
+                            orderedProductsTotalPrice += (decimal)row["dish_total_price"];
+                        }
+                        this.textBox2.Text = orderedProductsTotalPrice.ToString() + "  сом";
+                    }
+
+                    totalProfitPrice = orderedProductsTotalPrice - usedProductsTotalPrice;
+                    this.textBox3.Text = totalProfitPrice.ToString() + "  сом";
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
+        }
+
+        private void setUsedProductsForPeriod(DateTime startdate,DateTime enddate)
+        {
+            usedProductsTable.Clear();
+            string sqlExpression = "getUsedProductsForPeriod";
             try
             {
                 sqlConnection.Open();
-                SqlCommand command = new SqlCommand(sqlExpression, sqlConnection);
-                // указываем, что команда представляет хранимую процедуру
+                SqlCommand command = new SqlCommand(sqlExpression,sqlConnection);
                 command.CommandType = CommandType.StoredProcedure;
-                // параметр для ввода имени
-                SqlParameter sumParam = new SqlParameter
+
+                SqlParameter startDateParam = new SqlParameter
                 {
-                    ParameterName = "@sum",
-                    SqlDbType = SqlDbType.Money,
-                    Direction = ParameterDirection.Output
+                    ParameterName = "@startdate",
+                    Value = startdate
                 };
                 // добавляем параметр
-                command.Parameters.Add(sumParam);
-                command.ExecuteNonQuery();
-                if(command.Parameters["@sum"].Value.ToString() == "")
+                command.Parameters.Add(startDateParam);
+                // параметр для ввода возраста
+                SqlParameter enddateParam = new SqlParameter
                 {
-                    return 0;
+                    ParameterName = "@enddate",
+                    Value = enddate
+                };
+                command.Parameters.Add(enddateParam);
+
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        string productName = reader.GetString(0);
+                        string unitName = reader.GetString(1);
+                        decimal totalProductAmount = reader.GetDecimal(2);
+                        decimal totalProductPrice = reader.GetDecimal(3);
+
+                        DataRow newRow = usedProductsTable.NewRow();
+                        newRow["product_name"] = productName;
+                        newRow["unit_name"] = unitName;
+                        newRow["total_product_amount"] = Math.Round(totalProductAmount,2);
+                        newRow["total_product_price"] = Math.Round(totalProductPrice,2);
+
+                        usedProductsTable.Rows.Add(newRow);
+                    }
                 }
                 else
                 {
-                    return Math.Round((decimal)command.Parameters["@sum"].Value, 2);
+                    MessageBox.Show("Использованных продуктов за выбранный период времени нет");
                 }
-            }
-            catch(Exception ex)
-            {
-                throw new Exception(ex.Message, ex);
-            }
-            finally
-            {
-                sqlConnection.Close();
-            }
-        }
-    
-        private decimal getOrderedDishesSumForDate(string date)
-        {
-            string sqlExpression = "";
-            switch (date)
-            {
-                case "day":
-                    sqlExpression = "getOrderedDishesSumForToday";
-                    break;
-                case "week":
-                    sqlExpression = "getOrderedDishesSumForWeek";
-                    break;
-                case "month":
-                    sqlExpression = "getOrderedDishesSumForMonth";
-                    break;
-            }
-
-            try
-            {
-                sqlConnection.Open();
-                SqlCommand command = new SqlCommand(sqlExpression, sqlConnection);
-                // указываем, что команда представляет хранимую процедуру
-                command.CommandType = CommandType.StoredProcedure;
-                // параметр для ввода имени
-                SqlParameter sumParam = new SqlParameter
-                {
-                    ParameterName = "@sum",
-                    SqlDbType = SqlDbType.Money,
-                    Direction = ParameterDirection.Output
-                };
-                // добавляем параметр
-                command.Parameters.Add(sumParam);
-
-                command.ExecuteNonQuery();
-                if (command.Parameters["@sum"].Value.ToString() == "")
-                {
-                    return 0;
-                }
-                else
-                {
-                    return Math.Round((decimal)command.Parameters["@sum"].Value, 2);
-                }
+                reader.Close();
             }
             catch (Exception ex)
             {
@@ -227,5 +177,65 @@ namespace Lab1_RKP
                 sqlConnection.Close();
             }
         }
+
+
+        private void setOrderedDishesForPeriod(DateTime startdate, DateTime enddate)
+        {
+            orderedDishesTable.Clear();
+            string sqlExpression = "getOrderedDishesForPeriod";
+            try
+            {
+                sqlConnection.Open();
+                SqlCommand command = new SqlCommand(sqlExpression, sqlConnection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                SqlParameter startDateParam = new SqlParameter
+                {
+                    ParameterName = "@startdate",
+                    Value = startdate
+                };
+                // добавляем параметр
+                command.Parameters.Add(startDateParam);
+                // параметр для ввода возраста
+                SqlParameter enddateParam = new SqlParameter
+                {
+                    ParameterName = "@enddate",
+                    Value = enddate
+                };
+                command.Parameters.Add(enddateParam);
+
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        string dishName = reader.GetString(0);
+                        int totalDishesAmount = reader.GetInt32(1);
+                        decimal totalDishesPrice = reader.GetDecimal(2);
+
+                        DataRow newRow = orderedDishesTable.NewRow();
+                        newRow["dish_name"] = dishName;
+                        newRow["dish_total_count"] = totalDishesAmount;
+                        newRow["dish_total_price"] = Math.Round(totalDishesPrice, 2);
+
+                        orderedDishesTable.Rows.Add(newRow);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Заказанных блюд за выбранный период времени нет");
+                }
+                reader.Close();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+        }
+
     }
 }

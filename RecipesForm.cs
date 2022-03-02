@@ -18,22 +18,21 @@ namespace Lab1_RKP
         FormsSettings formsSettings;
         static string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
 
-        SqlConnection sqlConnection = new SqlConnection(connectionString);
+       public  SqlConnection sqlConnection = new SqlConnection(connectionString);
 
         private DataSet ds;
         private SqlDataAdapter adapter;
 
         private SqlCommandBuilder commandBuilder;
 
-        private DataTable productsTable;
-        private DataTable recipesTable;
-        private DataTable dishesTable;
+        public DataTable productsTable;
+        public DataTable recipesTable;
+        public DataTable dishesTable;
+        private DataTable unitsTable;
         private DataTable dataGridViewTable;
 
-        private string selectedProduct;
         private string selectedDish;
-        private int updateRecipeId = -1;
-        private int deleteRecipeId = -1;
+        private int selectedRecipeId = -1;
 
         public RecipesForm()
         {
@@ -52,7 +51,7 @@ namespace Lab1_RKP
             {
                 // Открываем подключение
                 sqlConnection.Open();
-                adapter = new SqlDataAdapter("Select * from recipes; Select dish_id,dish_name,dish_price from dishes; Select product_id,product_name,product_price from products", sqlConnection);
+                adapter = new SqlDataAdapter("Select * from recipes; Select dish_id,dish_name,dish_price from dishes order by dish_name; Select product_id,product_name,product_price,unit_id from products order by product_name;select * from units", sqlConnection);
                 ds = new DataSet();
                 adapter.Fill(ds);
                 fillTables();
@@ -70,189 +69,72 @@ namespace Lab1_RKP
 
         private void addBtn_Click(object sender, EventArgs e)
         {
-            decimal productAmount;
-            selectedDish = (string)this.comboBox1.SelectedItem;
-            selectedProduct = (string)this.comboBox2.SelectedItem;
-
-            bool productAmountIsNumber = decimal.TryParse(this.textBox2.Text, out productAmount);
-
-            if (this.textBox2.Text == "" || selectedDish == null || selectedProduct == null)
+            if(this.comboBox1.SelectedItem == null)
             {
-                MessageBox.Show("Для добавления нового рецепта заполните все поля, кроме ID");
+                MessageBox.Show("Для добавления новых ингредиентов сначала выберите блюдо");
             }
-            else if (!productAmountIsNumber || productAmount <= 0)
+            else if(this.checkedListBox1.CheckedItems.Count == 0)
             {
-                MessageBox.Show("Количество продукта может быть как целым,так и дробным числом и должно быть больше нуля");
+                MessageBox.Show("Для добавления новых ингредиентов сначала выберите нужные продукты");
             }
             else
             {
-                bool recipeIsHave = false;
-                var recipeCandidate = from r in recipesTable.AsEnumerable()
-                                      join d in dishesTable.AsEnumerable()
-                                      on r["dish_id"] equals d["dish_id"]
-                                      join p in productsTable.AsEnumerable() on r["product_id"] equals p["product_id"]
-                                      select new { productName = p["product_name"], dishName = d["dish_name"] };
-                foreach (var r in recipeCandidate)
+
+                    selectedDish = this.comboBox1.SelectedItem.ToString();
+                    CheckedListBox.CheckedItemCollection checkedProducts = this.checkedListBox1.CheckedItems;
+                    RecipeAddForm recipeAddForm = new RecipeAddForm(this, selectedDish, checkedProducts);
+                    recipeAddForm.Show();
+                    selectedRecipeId = -1;
+            }
+        }
+
+        private void changeBtn_Click(object sender, EventArgs e)
+        {
+            if(selectedRecipeId == -1)
+            {
+                MessageBox.Show("Для изменения количества ингредиента сначала выберите нужный ингредиент");
+            }
+            else
+            {
+                decimal productAmount = 0;
+                bool productAmountIsDecimal = decimal.TryParse(this.textBox1.Text, out productAmount);
+                if(!productAmountIsDecimal || productAmount <= 0)
                 {
-                    if (r.dishName == selectedDish && r.productName == selectedProduct)
-                    {
-                        recipeIsHave = true;
-                        break;
-                    }
-                }
-                if (recipeIsHave)
-                {
-                    MessageBox.Show($"Блюдо: {selectedDish} с ингредиентом: {selectedProduct} уже существует");
+                    MessageBox.Show("Количество ингредиента должно быть дробным или целым числом и больше нуля");
                 }
                 else
                 {
+                    DataRow recipeRow = recipesTable.Select().Where(r => (int)r["recipe_id"] == selectedRecipeId).ToArray()[0];
+                    recipeRow["product_amount"] = productAmount;
                     try
                     {
                         sqlConnection.Open();
-                        DataRow newRow = recipesTable.NewRow();
-                        newRow["product_amount"] = productAmount;
-                        int dish_id = 0;
-                        int product_id = 0;
-
-                        DataRow dish = dishesTable.AsEnumerable().Where(r => r["dish_name"] == selectedDish).ToList()[0];
-                        DataRow product = productsTable.AsEnumerable().Where(r => r["product_name"] == selectedProduct).ToList()[0];
-
-
-                        decimal dishPrice = dish["dish_price"].ToString() != "" ? (decimal)dish["dish_price"] : 0;
-                        decimal recipePrice = (int)product["product_price"] * productAmount;
-                        dishPrice = recipePrice + dishPrice;
-                        dish["dish_price"] = dishPrice;
-
-                        dish_id = (int)dish["dish_id"];
-                        product_id = (int)product["product_id"];
-
-                        newRow["dish_id"] = dish_id;
-                        newRow["product_id"] = product_id;
-                        recipesTable.Rows.Add(newRow);
-
                         updateDataSet();
                     }
-                    catch (Exception ex)
+                    catch(Exception ex)
                     {
                         MessageBox.Show(ex.Message);
                     }
                     finally
                     {
                         sqlConnection.Close();
-                        this.textBox2.Clear();
-                        this.comboBox1.Text = "";
-                        this.comboBox2.Text = "";
-                        updateRecipeId = -1;
-                        deleteRecipeId = -1;
+                        this.textBox1.Clear();
+                        selectedRecipeId = -1;
                     }
                 }
             }
-        }
-
-        private void changeBtn_Click(object sender, EventArgs e)
-        {
-
-            DataRow product = null;
-            DataRow recipe = null;
-            selectedDish = (string)this.comboBox1.SelectedItem;
-            selectedProduct = (string)this.comboBox2.SelectedItem;
-            decimal productAmount = 0;
-
-
-            if(updateRecipeId == -1)
-            {
-                MessageBox.Show("Для изменения рецепта блюда выберите нужное поле");
-            }
-            else if (this.comboBox1.SelectedItem == null)
-            {
-                MessageBox.Show("Для изменения рецепта блюда укажите название блюда");
-            }
-            else if (this.textBox2.Text == "" && this.comboBox2.SelectedItem == null)
-            {
-                MessageBox.Show("Для изменения рецепта блюда также заполните поля  'Количество продукта' и 'Название продукта' или одно из этих полей");
-            }
-            else
-            {
-                int productId = 0;
-                if (this.comboBox2.SelectedItem != null)
-                {
-                    product = productsTable.AsEnumerable().Where(r => r["product_name"] == selectedProduct).ToList()[0];
-                    productId = (int)product["product_id"];
-                }
-                if (this.textBox2.Text != "")
-                {
-                    bool productAmountIsNumber = decimal.TryParse(this.textBox2.Text, out productAmount);
-                    if (!productAmountIsNumber || productAmount <= 0)
-                    {
-                        MessageBox.Show("Количество продукта должно быть либо целым либо дробным числом и больше нуля");
-                        return;
-                    }
-                }
-                DataRow[] recipes = recipesTable.Select($"recipe_id = {updateRecipeId}");
-                if (recipes.Length == 0)
-                {
-                    MessageBox.Show("Рецепта с таким ID не существует");
-                }
-                else
-                {
-                    recipe = recipes[0];
-                    bool recipeIsHave = false;
-                    var recipeCandidate = from r in recipesTable.AsEnumerable()
-                                          join d in dishesTable.AsEnumerable()
-                                          on r["dish_id"] equals d["dish_id"]
-                                          join p in productsTable.AsEnumerable() on r["product_id"] equals p["product_id"]
-                                          select new { productName = p["product_name"], dishName = d["dish_name"] };
-                    foreach (var r in recipeCandidate)
-                    {
-                        if (r.dishName == selectedDish && r.productName == selectedProduct)
-                        {
-                            recipeIsHave = true;
-                            break;
-                        }
-                    }
-                    if (recipeIsHave)
-                    {
-                        MessageBox.Show($"Блюдо: {selectedDish} с ингредиентом: {selectedProduct} уже существует");
-                    }
-                    else
-                    {
-                        try
-                        {
-                            sqlConnection.Open();
-                            recipe["product_amount"] = productAmount > 0 ? productAmount : recipe["product_amount"];
-                            recipe["product_id"] = productId > 0 ? productId : recipe["product_id"];
-                            updateDataSet();
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(ex.Message);
-                        }
-                        finally
-                        {
-                            sqlConnection.Close();
-                            this.textBox2.Clear();
-                            this.comboBox1.Text = "";
-                            this.comboBox2.Text = "";
-                            updateRecipeId = -1;
-                            deleteRecipeId = -1;
-                        }
-                    }
-                }
-            }
-
         }
 
         private void deleteBtn_Click(object sender, EventArgs e)
         {
             DataRow recipe = null;
-
-            if(deleteRecipeId == -1)
+            if(selectedRecipeId == -1)
             {
                 MessageBox.Show("Для удаления рецепта сначала выберите нужное поле");
             }
             else
             {
-                DataRow[] recipes = recipesTable.Select($"recipe_id = {deleteRecipeId}");
+                DataRow[] recipes = recipesTable.Select($"recipe_id = {selectedRecipeId}");
                 if(recipes.Length == 0)
                 {
                     MessageBox.Show("Рецепта с таким ID не существует");
@@ -274,11 +156,8 @@ namespace Lab1_RKP
                     finally
                     {
                         sqlConnection.Close();
-                        this.textBox2.Clear();
                         this.comboBox1.Text = "";
-                        this.comboBox2.Text = "";
-                        updateRecipeId = -1;
-                        deleteRecipeId = -1;
+                        selectedRecipeId = -1;
                     }
                 }
             }
@@ -289,12 +168,12 @@ namespace Lab1_RKP
 
         }
 
-        private void updateDataSet()
+        public void updateDataSet()
         {
             commandBuilder = new SqlCommandBuilder(adapter);
             adapter.Update(ds);
             this.comboBox1.Items.Clear();
-            this.comboBox2.Items.Clear();
+            this.checkedListBox1.Items.Clear();
             ds.Clear();
             adapter.Fill(ds);
             fillTables();
@@ -304,19 +183,25 @@ namespace Lab1_RKP
             recipesTable = ds.Tables[0];
             dishesTable = ds.Tables[1];
             productsTable = ds.Tables[2];
+            unitsTable = ds.Tables[3];
             dataGridViewTable = updateData();
             foreach (DataRow row in dishesTable.Rows)
             {
                 this.comboBox1.Items.Add(row["dish_name"]);
             }
 
-            foreach (DataRow row in productsTable.Rows)
+            var collection = from t1 in productsTable.AsEnumerable()
+                             join t2 in unitsTable.AsEnumerable()
+                             on t1["unit_Id"] equals t2["unit_id"]
+                             select new { productName = t1["product_name"] + "," + t2["unit_name"] };
+            foreach(var item in collection)
             {
-                this.comboBox2.Items.Add(row["product_name"]);
+                this.checkedListBox1.Items.Add(item.productName);
             }
 
             this.dataGridView1.DataSource = dataGridViewTable;
             this.dataGridView1.Columns["recipe_id"].Visible = false;
+            this.dataGridView1.Columns["unit_name"].Visible = false;
         }
 
         private DataTable updateData()
@@ -327,37 +212,23 @@ namespace Lab1_RKP
                               on t1["product_id"] equals t2["product_id"]
                              join t3 in dishesTable.AsEnumerable()
                                on t1["dish_id"] equals t3["dish_id"]
-                               orderby t2["product_name"],t3["dish_name"]
-                             select new { recipeId = t1["recipe_id"], productAmount = t1["product_amount"], productName = t2["product_name"], dishName = t3["dish_name"] };
+                             join t4 in unitsTable.AsEnumerable()
+                             on t2["unit_id"] equals t4["unit_id"]
+                               orderby t3["dish_name"],t2["product_name"]
+                             select new { recipeId = t1["recipe_id"], productAmount = t1["product_amount"], productName = t2["product_name"], dishName = t3["dish_name"],unitName = t4["unit_name"]};
             table.Columns.Add("recipe_id", typeof(int));
             table.Columns.Add("product_amount", typeof(decimal));
             table.Columns.Add("product_name", typeof(string));
             table.Columns.Add("dish_name", typeof(string));
+            table.Columns.Add("unit_name", typeof(string));
             foreach (var item in collection)
             {
-                table.Rows.Add(item.recipeId, Math.Round((decimal)item.productAmount,2), item.productName, item.dishName);
+                table.Rows.Add(item.recipeId, Math.Round((decimal)item.productAmount,2), item.productName, item.dishName,item.unitName);
             }
             return table;
 
         }
-        private void dataGridView1_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
-        {
-            if (e.RowIndex > -1)
-            {
-                DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
-                if (row.Cells[0].Value.ToString() == "")
-                {
-                    updateRecipeId = -1;
-                }
-                else
-                {
-                    this.textBox2.Text = row.Cells[1].Value.ToString();
-                    this.comboBox1.Text = row.Cells[3].Value.ToString();
-                    this.comboBox2.Text = row.Cells[2].Value.ToString();
-                    updateRecipeId = (int)row.Cells[0].Value;
-                }
-            }
-        }
+     
 
         private void dataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
@@ -366,13 +237,32 @@ namespace Lab1_RKP
                 DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
                 if (row.Cells[0].Value.ToString() == "")
                 {
-                    deleteRecipeId = -1;
+                    selectedRecipeId = -1;
                 }
                 else
                 {
-                    deleteRecipeId = (int)row.Cells[0].Value;
+                    selectedRecipeId = (int)row.Cells[0].Value;
                 }
             }
         }
+
+        private void dataGridView1_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex > -1)
+            {
+                DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
+                if (row.Cells[0].Value.ToString() == "")
+                {
+                    selectedRecipeId = -1;
+                }
+                else
+                {
+                    this.textBox1.Text = row.Cells[1].Value.ToString();
+                    selectedRecipeId = (int)row.Cells[0].Value;
+                }
+            }
+        }
+
+       
     }
 }

@@ -50,7 +50,7 @@ namespace Lab1_RKP
             {
                 // Открываем подключение
                 sqlConnection.Open();
-                adapter = new SqlDataAdapter("Select * from dishes order by dish_name;Select * from dishTypes", sqlConnection);
+                adapter = new SqlDataAdapter("Select * from dishes order by dish_name;Select * from dishTypes order by dishType_name", sqlConnection);
                 ds = new DataSet();
                 adapter.Fill(ds);
                 fillBoxes();
