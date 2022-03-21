@@ -18,7 +18,7 @@ namespace Lab1_RKP
         FormsSettings formsSettings;
         static string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
 
-       public  SqlConnection sqlConnection = new SqlConnection(connectionString);
+        public SqlConnection sqlConnection = new SqlConnection(connectionString);
 
         private DataSet ds;
         private SqlDataAdapter adapter;
@@ -45,7 +45,7 @@ namespace Lab1_RKP
         }
 
 
-        private void recipesForm_Load(object sender,EventArgs e)
+        private void recipesForm_Load(object sender, EventArgs e)
         {
             try
             {
@@ -69,28 +69,28 @@ namespace Lab1_RKP
 
         private void addBtn_Click(object sender, EventArgs e)
         {
-            if(this.comboBox1.SelectedItem == null)
+            if (this.comboBox1.SelectedItem == null)
             {
                 MessageBox.Show("Для добавления новых ингредиентов сначала выберите блюдо");
             }
-            else if(this.checkedListBox1.CheckedItems.Count == 0)
+            else if (this.checkedListBox1.CheckedItems.Count == 0)
             {
                 MessageBox.Show("Для добавления новых ингредиентов сначала выберите нужные продукты");
             }
             else
             {
 
-                    selectedDish = this.comboBox1.SelectedItem.ToString();
-                    CheckedListBox.CheckedItemCollection checkedProducts = this.checkedListBox1.CheckedItems;
-                    RecipeAddForm recipeAddForm = new RecipeAddForm(this, selectedDish, checkedProducts);
-                    recipeAddForm.Show();
-                    selectedRecipeId = -1;
+                selectedDish = this.comboBox1.SelectedItem.ToString();
+                CheckedListBox.CheckedItemCollection checkedProducts = this.checkedListBox1.CheckedItems;
+                RecipeAddForm recipeAddForm = new RecipeAddForm(this, selectedDish, checkedProducts);
+                recipeAddForm.Show();
+                selectedRecipeId = -1;
             }
         }
 
         private void changeBtn_Click(object sender, EventArgs e)
         {
-            if(selectedRecipeId == -1)
+            if (selectedRecipeId == -1)
             {
                 MessageBox.Show("Для изменения количества ингредиента сначала выберите нужный ингредиент");
             }
@@ -98,7 +98,7 @@ namespace Lab1_RKP
             {
                 decimal productAmount = 0;
                 bool productAmountIsDecimal = decimal.TryParse(this.textBox1.Text, out productAmount);
-                if(!productAmountIsDecimal || productAmount <= 0)
+                if (!productAmountIsDecimal || productAmount <= 0)
                 {
                     MessageBox.Show("Количество ингредиента должно быть дробным или целым числом и больше нуля");
                 }
@@ -111,7 +111,7 @@ namespace Lab1_RKP
                         sqlConnection.Open();
                         updateDataSet();
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         MessageBox.Show(ex.Message);
                     }
@@ -128,14 +128,14 @@ namespace Lab1_RKP
         private void deleteBtn_Click(object sender, EventArgs e)
         {
             DataRow recipe = null;
-            if(selectedRecipeId == -1)
+            if (selectedRecipeId == -1)
             {
                 MessageBox.Show("Для удаления рецепта сначала выберите нужное поле");
             }
             else
             {
                 DataRow[] recipes = recipesTable.Select($"recipe_id = {selectedRecipeId}");
-                if(recipes.Length == 0)
+                if (recipes.Length == 0)
                 {
                     MessageBox.Show("Рецепта с таким ID не существует");
                 }
@@ -148,7 +148,7 @@ namespace Lab1_RKP
                         recipe.Delete();
                         updateDataSet();
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         MessageBox.Show(ex.Message);
 
@@ -194,7 +194,7 @@ namespace Lab1_RKP
                              join t2 in unitsTable.AsEnumerable()
                              on t1["unit_Id"] equals t2["unit_id"]
                              select new { productName = t1["product_name"] + "," + t2["unit_name"] };
-            foreach(var item in collection)
+            foreach (var item in collection)
             {
                 this.checkedListBox1.Items.Add(item.productName);
             }
@@ -214,8 +214,8 @@ namespace Lab1_RKP
                                on t1["dish_id"] equals t3["dish_id"]
                              join t4 in unitsTable.AsEnumerable()
                              on t2["unit_id"] equals t4["unit_id"]
-                               orderby t3["dish_name"],t2["product_name"]
-                             select new { recipeId = t1["recipe_id"], productAmount = t1["product_amount"], productName = t2["product_name"], dishName = t3["dish_name"],unitName = t4["unit_name"]};
+                             orderby t3["dish_name"], t2["product_name"]
+                             select new { recipeId = t1["recipe_id"], productAmount = t1["product_amount"], productName = t2["product_name"], dishName = t3["dish_name"], unitName = t4["unit_name"] };
             table.Columns.Add("recipe_id", typeof(int));
             table.Columns.Add("product_amount", typeof(decimal));
             table.Columns.Add("product_name", typeof(string));
@@ -223,12 +223,12 @@ namespace Lab1_RKP
             table.Columns.Add("unit_name", typeof(string));
             foreach (var item in collection)
             {
-                table.Rows.Add(item.recipeId, Math.Round((decimal)item.productAmount,2), item.productName, item.dishName,item.unitName);
+                table.Rows.Add(item.recipeId, Math.Round((decimal)item.productAmount, 2), item.productName, item.dishName, item.unitName);
             }
             return table;
 
         }
-     
+
 
         private void dataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
@@ -263,6 +263,42 @@ namespace Lab1_RKP
             }
         }
 
-       
+
+        private void comboBox1_TextChanged(object sender, EventArgs e)
+        {
+            if (this.comboBox1.Text != "")
+            {
+                DataRow[] rows = this.dishesTable.Select($"dish_name like '%{this.comboBox1.Text}%'");
+                if(rows.Length > 0)
+                {
+                    this.comboBox1.Items.Clear();
+                    foreach (DataRow row in rows)
+                    {
+                        this.comboBox1.Items.Add(row["dish_name"]);
+                    }
+                    this.comboBox1.DroppedDown = true;
+                    Cursor.Current = Cursors.Default;
+                    comboBox1.Select(comboBox1.Text.Length, 0);
+                }
+               
+            }
+            else
+            {
+                this.comboBox1.Items.Clear();
+                foreach(DataRow row in dishesTable.Rows)
+                {
+                    this.comboBox1.Items.Add(row["dish_name"]);
+                }
+            }
+        }
+
+        private void textBox2_TextChanged(object sender, EventArgs e)
+        {
+                DataRow[] rows = dataGridViewTable.Select($"dish_name like '%{this.textBox2.Text}%'");
+                if(rows.Length > 0)
+                {
+                    (dataGridView1.DataSource as DataTable).DefaultView.RowFilter = string.Format("dish_name LIKE '%{0}%'", this.textBox2.Text);
+                }
+        }
     }
 }

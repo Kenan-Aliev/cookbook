@@ -39,6 +39,8 @@ namespace Lab1_RKP
             this.checkedListBox1 = new System.Windows.Forms.CheckedListBox();
             this.label1 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -61,6 +63,7 @@ namespace Lab1_RKP
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(153, 24);
             this.comboBox1.TabIndex = 5;
+            this.comboBox1.TextChanged += new System.EventHandler(this.comboBox1_TextChanged);
             // 
             // label3
             // 
@@ -86,7 +89,7 @@ namespace Lab1_RKP
             // 
             this.button1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.button1.ForeColor = System.Drawing.Color.White;
-            this.button1.Location = new System.Drawing.Point(270, 172);
+            this.button1.Location = new System.Drawing.Point(434, 172);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(114, 42);
             this.button1.TabIndex = 9;
@@ -98,7 +101,7 @@ namespace Lab1_RKP
             // 
             this.button2.BackColor = System.Drawing.Color.Olive;
             this.button2.ForeColor = System.Drawing.Color.White;
-            this.button2.Location = new System.Drawing.Point(429, 172);
+            this.button2.Location = new System.Drawing.Point(554, 172);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(114, 42);
             this.button2.TabIndex = 10;
@@ -110,7 +113,7 @@ namespace Lab1_RKP
             // 
             this.button3.BackColor = System.Drawing.Color.Red;
             this.button3.ForeColor = System.Drawing.Color.White;
-            this.button3.Location = new System.Drawing.Point(594, 171);
+            this.button3.Location = new System.Drawing.Point(674, 172);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(114, 42);
             this.button3.TabIndex = 11;
@@ -143,11 +146,32 @@ namespace Lab1_RKP
             this.textBox1.Size = new System.Drawing.Size(121, 22);
             this.textBox1.TabIndex = 14;
             // 
+            // textBox2
+            // 
+            this.textBox2.ForeColor = System.Drawing.Color.Black;
+            this.textBox2.Location = new System.Drawing.Point(215, 182);
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(182, 22);
+            this.textBox2.TabIndex = 15;
+            this.textBox2.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.ForeColor = System.Drawing.Color.Red;
+            this.label2.Location = new System.Drawing.Point(20, 185);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(189, 17);
+            this.label2.TabIndex = 16;
+            this.label2.Text = "Поиск ингредиентов блюда";
+            // 
             // RecipesForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.textBox2);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.checkedListBox1);
@@ -178,5 +202,7 @@ namespace Lab1_RKP
         private System.Windows.Forms.CheckedListBox checkedListBox1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.Label label2;
     }
 }
