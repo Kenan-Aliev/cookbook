@@ -21,6 +21,7 @@ namespace Lab1_RKP
 
         SqlConnection sqlConnection = new SqlConnection(connectionString);
         private DataTable orderedDishesTable;
+        private DataTable ordersTable;
         private SqlDataAdapter adapter;
         private SqlCommandBuilder commandBuilder;
 
@@ -148,7 +149,7 @@ namespace Lab1_RKP
                 i = 0;
 
                 DataRow newRow = ordersForm.ordersTable.NewRow();
-                newRow["order_date"] = DateTime.Now;
+                newRow["order_date"] = DateTime.Now.Date;
                 try
                 {
                     ordersForm.sqlConnection.Open();
@@ -165,7 +166,8 @@ namespace Lab1_RKP
                     ordersForm.sqlConnection.Close();
                 }
 
-                DataRow order = ordersForm.ordersTable.Rows[ordersForm.ordersTable.Rows.Count - 1];
+                int orderId = getLastOrderId();
+                Console.WriteLine(orderId);
                 try
                 {
                     sqlConnection.Open();
@@ -183,7 +185,7 @@ namespace Lab1_RKP
                         }
 
                         DataRow newOrderedDishRow = orderedDishesTable.NewRow();
-                        newOrderedDishRow["order_id"] = (int)order["order_id"];
+                        newOrderedDishRow["order_id"] = orderId;
                         newOrderedDishRow["dish_id"] = (int)dishRow["dish_id"];
                         newOrderedDishRow["dish_count"] = textBoxValue;
 
@@ -212,5 +214,36 @@ namespace Lab1_RKP
             orderedDishesTable.Clear();
             adapter.Fill(orderedDishesTable);
         }
+
+
+        private int getLastOrderId()
+        {
+            string sqlExpression = "LastInsertedOrderId";
+            int orderId = default;
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand(sqlExpression, connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                
+
+                // определяем первый выходной параметр
+                SqlParameter orderIdParam = new SqlParameter
+                {
+                    ParameterName = "@orderId",
+                    SqlDbType = SqlDbType.Int // тип параметра
+                };
+                // указываем, что параметр будет выходным
+                orderIdParam.Direction = ParameterDirection.Output;
+                command.Parameters.Add(orderIdParam);
+
+                command.ExecuteNonQuery();
+
+                orderId = (int)command.Parameters["@orderId"].Value;
+            }
+            return orderId;
+        }
+     
     }
 }

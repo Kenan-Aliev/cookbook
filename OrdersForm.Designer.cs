@@ -44,7 +44,7 @@ namespace Lab1_RKP
             // 
             this.label2.AutoSize = true;
             this.label2.ForeColor = System.Drawing.Color.Red;
-            this.label2.Location = new System.Drawing.Point(12, 27);
+            this.label2.Location = new System.Drawing.Point(15, 102);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(120, 17);
             this.label2.TabIndex = 2;
@@ -55,7 +55,7 @@ namespace Lab1_RKP
             this.checkedListBox1.FormattingEnabled = true;
             this.checkedListBox1.Location = new System.Drawing.Point(139, 27);
             this.checkedListBox1.Name = "checkedListBox1";
-            this.checkedListBox1.Size = new System.Drawing.Size(154, 106);
+            this.checkedListBox1.Size = new System.Drawing.Size(204, 157);
             this.checkedListBox1.TabIndex = 3;
             // 
             // dataGridView1

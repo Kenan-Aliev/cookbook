@@ -26,6 +26,7 @@ namespace Lab1_RKP
 
         public DataTable ordersTable;
         public DataTable dishesTable;
+        private DataTable recipesTable;
 
         public int selectedOrderId = -1;
 
@@ -46,7 +47,7 @@ namespace Lab1_RKP
             {
                 // Открываем подключение
                 sqlConnection.Open();
-                adapter = new SqlDataAdapter("Select * from orders order by order_date desc;Select * from dishes order by dish_name;", sqlConnection);
+                adapter = new SqlDataAdapter("Select * from orders order by order_date desc;Select * from dishes order by dish_name;Select * from recipes", sqlConnection);
                 ds = new DataSet();
                 adapter.Fill(ds);
                 fillBoxes();
@@ -70,8 +71,7 @@ namespace Lab1_RKP
             }
             else
             {
-                
-                    AddOrderForm addOrderForm = new AddOrderForm(this, this.checkedListBox1.CheckedItems);
+                AddOrderForm addOrderForm = new AddOrderForm(this, this.checkedListBox1.CheckedItems);
                     addOrderForm.ShowDialog();
                     addOrderForm.Disposed += clearSelection;
             }
@@ -87,8 +87,17 @@ namespace Lab1_RKP
             {
                 try
                 {
-                    OrderChangeForm orderChangeForm = new OrderChangeForm(selectedOrderId);
-                    orderChangeForm.ShowDialog();
+                    DataRow[] rows = ordersTable.Select($"order_id = {selectedOrderId}");
+                    if(rows[0]["order_price"].ToString() != "")
+                    {
+                        MessageBox.Show("Вы уже закрыли счет. Вы не можете изменить заказ");
+                    }
+                    else
+                    {
+                        OrderChangeForm orderChangeForm = new OrderChangeForm(selectedOrderId);
+                        orderChangeForm.ShowDialog();
+                    }
+                    
                 }
                 catch(Exception ex)
                 {
@@ -175,10 +184,16 @@ namespace Lab1_RKP
         {
             ordersTable = ds.Tables[0];
             dishesTable = ds.Tables[1];
+            recipesTable = ds.Tables[2];
+            var dishes = from d in dishesTable.AsEnumerable()
+                         join r in recipesTable.AsEnumerable() on d["dish_id"] equals r["dish_id"]
+                         group d by d["dish_name"] into g
+                         select new { Name = g.Key ,Count = g.Count() };
+            
             this.checkedListBox1.Items.Clear();
-            foreach (DataRow dish in dishesTable.Rows)
+            foreach (var item in dishes)
             {
-                this.checkedListBox1.Items.Add(dish["dish_name"]);
+                this.checkedListBox1.Items.Add(item.Name);
             }
             this.dataGridView1.DataSource = ordersTable;
             this.dataGridView1.Columns["order_id"].Visible = false;

@@ -52,10 +52,11 @@ namespace Lab1_RKP
 
            foreach(var item in checkedProducts)
             {
+                Console.WriteLine(item);
                 Label label = new Label();
                 label.Text = item.ToString();
                 label.ForeColor = Color.Red;
-                label.Location = new Point(100, 50 + y);
+                label.Location = new Point(50, 50 + y);
 
                 TextBox textBox = new TextBox();
                 textBox.Location = new Point(200, 50 + y);
@@ -66,7 +67,7 @@ namespace Lab1_RKP
                 btn.ForeColor = Color.White;
                 btn.BackColor = Color.Red;
                 btn.Size = new Size(130, 35);
-                btn.Location = new Point(350, 40 + y);
+                btn.Location = new Point(400, 40 + y);
                 btn.Click += deleteBtnClick;
 
                 btns.Add(btn, label);

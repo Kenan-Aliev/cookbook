@@ -56,18 +56,17 @@ namespace Lab1_RKP
         private void getProfit_Click(object sender, EventArgs e)
         {
 
-            DateTime startDate = this.dateTimePicker1.Value;
-            DateTime endDate = this.dateTimePicker2.Value;
+            DateTime startDate = this.dateTimePicker1.Value.Date;
+            DateTime endDate = this.dateTimePicker2.Value.Date;
+            Console.WriteLine(startDate.ToString());
+            Console.WriteLine(endDate.ToString());
+
 
             int compareDates = startDate.CompareTo(endDate);
 
-            if(compareDates == 1)
+            if (compareDates == 1)
             {
                 MessageBox.Show("Начальная дата должна быть раньше чем конечная");
-            }
-            else if(compareDates == 0)
-            {
-                MessageBox.Show("Если вы хотите посмотреть отчет за сегодняшний день,то в качестве начальной даты выберите вчерашний день");
             }
             else
             {
@@ -80,21 +79,21 @@ namespace Lab1_RKP
                     setUsedProductsForPeriod(startDate, endDate);
                     setOrderedDishesForPeriod(startDate, endDate);
 
-                    if(usedProductsTable.Rows.Count == 0)
+                    if (usedProductsTable.Rows.Count == 0)
                     {
                         usedProductsTotalPrice = 0;
                         this.textBox1.Text = usedProductsTotalPrice.ToString();
                     }
                     else
                     {
-                        foreach(DataRow row in usedProductsTable.Rows)
+                        foreach (DataRow row in usedProductsTable.Rows)
                         {
                             usedProductsTotalPrice += (decimal)row["total_product_price"];
                         }
                         this.textBox1.Text = usedProductsTotalPrice.ToString() + "  сом";
                     }
 
-                    if(orderedDishesTable.Rows.Count == 0)
+                    if (orderedDishesTable.Rows.Count == 0)
                     {
                         orderedProductsTotalPrice = 0;
                         this.textBox2.Text = orderedProductsTotalPrice.ToString();
@@ -111,7 +110,7 @@ namespace Lab1_RKP
                     totalProfitPrice = orderedProductsTotalPrice - usedProductsTotalPrice;
                     this.textBox3.Text = totalProfitPrice.ToString() + "  сом";
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message);
                 }

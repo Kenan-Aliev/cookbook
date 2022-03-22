@@ -26,13 +26,16 @@ namespace Lab1_RKP
 
         private DataTable orderedDishesTable;
         private DataTable dishesTable;
+        private DataTable recipesTable;
         private DataTable dataGridViewTable;
 
         private int updateOrderedDishId = -1;
         private int deleteOrderedDishId = -1;
         public OrderChangeForm(int orderId)
         {
+
             InitializeComponent();
+            Console.WriteLine(orderId);
             FormsSettings formsSettings = new FormsSettings("Форма изменения заказа");
             this.Text = formsSettings.Text;
             this.BackColor = formsSettings.BackColor;
@@ -47,7 +50,7 @@ namespace Lab1_RKP
             {
                 // Открываем подключение
                 sqlConnection.Open();
-                adapter = new SqlDataAdapter($"Select * from ordered_dishes where order_id = {orderId};Select * from dishes;", sqlConnection);
+                adapter = new SqlDataAdapter($"Select * from ordered_dishes where order_id = {orderId};Select * from dishes;Select * from recipes", sqlConnection);
                 ds = new DataSet();
                 adapter.Fill(ds);
                 fillTables();
@@ -62,7 +65,6 @@ namespace Lab1_RKP
                 sqlConnection.Close();
             }
         }
-
 
         private void addBtn_Click(object sender, EventArgs e)
         {
@@ -252,12 +254,23 @@ namespace Lab1_RKP
         {
             orderedDishesTable = ds.Tables[0];
             dishesTable = ds.Tables[1];
+            recipesTable = ds.Tables[2];
             dataGridViewTable = updateData();
 
-            this.comboBox1.Items.Clear();
-            foreach (DataRow row in dishesTable.Rows)
+            foreach(DataRow row in orderedDishesTable.Rows)
             {
-                this.comboBox1.Items.Add(row["dish_name"]);
+                Console.WriteLine(row["order_id"]);
+            }
+
+            var dishes = from d in dishesTable.AsEnumerable()
+                         join r in recipesTable.AsEnumerable() on d["dish_id"] equals r["dish_id"]
+                         group d by d["dish_name"] into g
+                         select new { Name = g.Key, Count = g.Count() };
+            this.comboBox1.Items.Clear();
+           
+            foreach (var item in dishes)
+            {
+                this.comboBox1.Items.Add(item.Name);
             }
             this.dataGridView1.DataSource = dataGridViewTable;
             this.dataGridView1.Columns["orderedDish_id"].Visible = false;

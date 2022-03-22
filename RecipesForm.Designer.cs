@@ -69,7 +69,7 @@ namespace Lab1_RKP
             // 
             this.label3.AutoSize = true;
             this.label3.ForeColor = System.Drawing.Color.Red;
-            this.label3.Location = new System.Drawing.Point(386, 79);
+            this.label3.Location = new System.Drawing.Point(386, 95);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(141, 17);
             this.label3.TabIndex = 7;
@@ -126,7 +126,7 @@ namespace Lab1_RKP
             this.checkedListBox1.FormattingEnabled = true;
             this.checkedListBox1.Location = new System.Drawing.Point(533, 27);
             this.checkedListBox1.Name = "checkedListBox1";
-            this.checkedListBox1.Size = new System.Drawing.Size(255, 123);
+            this.checkedListBox1.Size = new System.Drawing.Size(255, 140);
             this.checkedListBox1.TabIndex = 12;
             // 
             // label1
